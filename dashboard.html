@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Raymarine</title>
+    <title>AdminLTE Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" />
@@ -23,13 +23,13 @@
                 </li>
             </ul>
             <!-- 在 Navbar 中加入 device-name -->
-            <!-- <ul class="navbar-nav ml-auto">
+            <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="#">
                         <span id="device-name">Raymarine</span>
                     </a>
                 </li>
-            </ul> -->
+            </ul>
         </nav>
         <!-- /頂部導覽列 -->
 
@@ -69,30 +69,48 @@
             <!-- 主要內容區 -->
             <section class="content">
                 <div class="container-fluid">
+                    <!-- 第一排：統計卡片 -->
+                    <!-- <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>150</h3>
+                                    <p>New Orders</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <a href="#" class="small-box-footer">
+                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div> -->
+                    <!-- /.row -->
 
                     <!-- 藍牙連線功能區 -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card card-primary card-outline">
-                                <div class="card-header">
-                                    <h3 class="card-title">connect</h3>
-                                </div>
+                                <!-- <div class="card-header">
+                                    <h3 class="card-title">Connect</h3>
+                                </div> -->
                                 <div class="card-body">
                                     <!-- 初始狀態區塊 -->
                                     <div class="content" id="initial-screen">
                                         <div class="alert alert-primary" role="alert" id="bluetooth-is-available">
                                             <b><span id="bluetooth-is-available-message"></span></b>
-                                            <p>This tool is compatible with desktops (or laptops) with the <b>latest
-                                                    Chrome, Opera and Edge</b> browsers, and working
-                                                Bluetooth connection (most laptops have them these days). You can also
-                                                try it from Chrome on Android, or Bluefy on
-                                                iOS/iPadOS.
+                                            This tool is compatible with desktops (or laptops) with the <b>latest
+                                                Chrome, Opera and Edge</b> browsers, and working
+                                            Bluetooth connection (most laptops have them these days). You can also try
+                                            it from Chrome on Android, or Bluefy on
+                                            iOS/iPadOS.
                                             <div>
                                                 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
                                             </div>
                                             您的瀏覽器中可使用藍牙。該工具與裝有最新 Chrome、Opera 和 Edge
                                             瀏覽器以及有效藍牙連接（如今大多數筆記型電腦都具備）的桌上型電腦（或筆記型電腦）相容。
-                                            您也可以透過 Android 上的 Chrome 或 iOS/iPadOS 上的 Bluefy 來嘗試。</p>
+                                            您也可以透過 Android 上的 Chrome 或 iOS/iPadOS 上的 Bluefy 來嘗試。
                                         </div>
                                         <!-- 連線按鈕區塊 -->
                                         <div id="connect-block" style="display: none;">
@@ -119,16 +137,6 @@
                                     <!-- 已連線狀態 -->
                                     <div class="content" id="connected-screen" style="display: none;">
                                         <div class="container">
-                                            <div>
-                                                <button id="button-echo" type="submit" class="btn btn-primary"><i
-                                                        class="bi-soundwave"></i> Echo</button>
-                                                <button id="button-disconnect" type="submit"
-                                                    class="btn btn-secondary"><i class="bi-x-square"></i>
-                                                    Disconnect</button>
-                                                <button id="button-reset" type="submit" class="btn btn-info"><i
-                                                        class="bi-arrow-clockwise"></i> Reset</button>
-                                            </div>
-                                            <hr />
                                             <h3>Images</h3>
                                             <div id="image-list"></div>
                                             <div>
@@ -154,6 +162,26 @@
                                                 <button class="btn btn-primary" id="file-upload" disabled><i
                                                         class="bi-upload"></i> Upload</button>
                                             </div>
+                                            <hr />
+                                            <!-- <h3>Function Test</h3> -->
+
+                                            <div class="container mt-5 text-center">
+                                                <h1>Function Test</h1>
+
+                                                <button id="toggleLedButton" class="btn btn-success" disabled>💡 Toggle
+                                                    LED</button>
+                                                <button id="toggleLedButton" class="btn btn-success" disabled>🔗 Wi-Fi
+                                                </button>
+                                                <button id="button-echo" type="submit" class="btn btn-primary"><i
+                                                        class="bi-soundwave"></i> Echo</button>
+                                                <button id="button-disconnect" type="submit"
+                                                    class="btn btn-secondary"><i class="bi-x-square"></i>
+                                                    Disconnect</button>
+                                                <button id="button-reset" type="submit" class="btn btn-info"><i
+                                                        class="bi-arrow-clockwise"></i> Reset</button>
+                                            </div>
+
+
                                         </div>
                                     </div>
                                     <!-- /連線狀態區塊 -->

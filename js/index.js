@@ -50,6 +50,8 @@ mcumgr.onConnecting(() => {
 });
 mcumgr.onConnect(() => {
     deviceName.innerText = mcumgr.name;
+    // 修改藍芽連線區的顯示文字為「連線成功」
+    document.getElementById("bluetooth-is-available-message").innerText = "連線成功";
     screens.connecting.style.display = 'none';
     screens.initial.style.display = 'none';
     screens.connected.style.display = 'block';
