@@ -195,6 +195,9 @@ class MCUManager {
     smpEcho(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_OS, OS_MGMT_ID_ECHO, { d: message });
     }
+    smpLed(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag","led","on"] });
+    }
     cmdImageState() {
         return this._sendMessage(MGMT_OP_READ, MGMT_GROUP_ID_IMAGE, IMG_MGMT_ID_STATE);
     }

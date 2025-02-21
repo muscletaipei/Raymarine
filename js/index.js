@@ -8,6 +8,9 @@ const deviceName = document.getElementById('device-name');
 const deviceNameInput = document.getElementById('device-name-input');
 const connectButton = document.getElementById('button-connect');
 const echoButton = document.getElementById('button-echo');
+// 修改LED button
+const ledButton = document.getElementById('button-led');
+
 const disconnectButton = document.getElementById('button-disconnect');
 const resetButton = document.getElementById('button-reset');
 const imageStateButton = document.getElementById('button-image-state');
@@ -79,7 +82,11 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                     console.log(data);
                     break;
             }
+        break;
+        case MGMT_GROUP_ID_SHELL:
+            alert(data.o);
             break;
+            // break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
                 case IMG_MGMT_ID_STATE:
