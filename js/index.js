@@ -10,6 +10,8 @@ const connectButton = document.getElementById('button-connect');
 const echoButton = document.getElementById('button-echo');
 // 修改LED button
 const ledButton = document.getElementById('button-led');
+const ledOffButton = document.getElementById('button-led-off');
+
 
 const disconnectButton = document.getElementById('button-disconnect');
 const resetButton = document.getElementById('button-reset');
@@ -46,7 +48,7 @@ deviceNameInput.addEventListener('change', () => {
 
 const mcumgr = new MCUManager();
 mcumgr.onConnecting(() => {
-    console.log('Connecting...');
+    console.log('BT Connecting...');
     screens.initial.style.display = 'none';
     screens.connected.style.display = 'none';
     screens.connecting.style.display = 'block';
@@ -59,6 +61,10 @@ mcumgr.onConnect(() => {
     screens.initial.style.display = 'none';
     screens.connected.style.display = 'block';
     imageList.innerHTML = '';
+    // device id
+    localStorage.setItem("deviceId", mcumgr._device.id);
+    // 轉跳到 test.html 頁面
+    // window.location.href = "test.html";
     mcumgr.cmdImageState();
 });
 mcumgr.onDisconnect(() => {
@@ -82,11 +88,10 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                     console.log(data);
                     break;
             }
-        break;
+            break;
         case MGMT_GROUP_ID_SHELL:
             alert(data.o);
             break;
-            // break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
                 case IMG_MGMT_ID_STATE:
@@ -177,6 +182,16 @@ echoButton.addEventListener('click', async () => {
     const message = prompt('Enter a text message to send', 'Hello World!');
     await mcumgr.smpEcho(message);
 });
+// 修改LED button
+ledButton.addEventListener('click', async () => {
+    const message = prompt('LED on', 'LED on!');
+    await mcumgr.smpLed(message);
+});
+
+ledOffButton.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpLedoff(message);
+});
 
 resetButton.addEventListener('click', async () => {
     await mcumgr.cmdReset();
@@ -201,3 +216,18 @@ confirmButton.addEventListener('click', async () => {
         await mcumgr.cmdImageConfirm(images[0].hash);
     }
 });
+
+// 在此加入 Device ID 顯示更新邏輯
+document.addEventListener("DOMContentLoaded", function () {
+    const deviceIdDisplay = document.getElementById("device-id-display");
+    // 如果連線中，更新顯示連線設備的 id；否則顯示 "未連線"
+    if (typeof mcumgr !== "undefined" && mcumgr._device) {
+        deviceIdDisplay.innerText = mcumgr._device.id;
+        // 也可以存入 localStorage 以供後續頁面使用
+        localStorage.setItem("deviceId", mcumgr._device.id);
+    } else {
+        const storedId = localStorage.getItem("deviceId");
+        deviceIdDisplay.innerText = storedId ? storedId : "未連線";
+    }
+});
+
