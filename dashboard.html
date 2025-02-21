@@ -168,35 +168,69 @@
                                             <div class="container mt-5 text-center">
                                                 <h1>Function Test</h1>
 
-                                                <!-- <button id="button-led" class="submit" disabled>💡 Toggle
-                                                    LED</button> -->
-                                                <button id="button-led" type="submit" class="btn btn-primary"><i
-                                                    class="bi-soundwave"></i>💡 Toggle
-                                                    LED</button>
-
-                                                <button id="toggleLedButton" class="btn btn-success" disabled>🔗 Wi-Fi
-                                                </button>
-                                                <button id="button-echo" type="submit" class="btn btn-primary"><i
-                                                        class="bi-soundwave"></i> Echo</button>
-                                                <button id="button-disconnect" type="submit"
-                                                    class="btn btn-secondary"><i class="bi-x-square"></i>
-                                                    Disconnect</button>
-                                                <button id="button-reset" type="submit" class="btn btn-info"><i
-                                                        class="bi-arrow-clockwise"></i> Reset</button>
                                             </div>
+                                            <hr />
+                                            <!-- <h3>Function Test</h3> -->
+                                            <!-- 左側：LED 控制卡 -->
+                                            <div class="col-mb-3">
+                                                <div class="card card-primary">
+                                                    <div class="card-header">
+                                                        <h3 class="card-title">Test Item</h3>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <button id="button-led" type="submit" class="btn btn-primary"><i
+                                                                class="bi-soundwave"></i>💡 LED ON</button>
+                                                        <button id="button-led-off" type="submit"
+                                                            class="btn btn-primary"><i class="bi-soundwave"></i>💡 LED
+                                                            Off</button>
+
+                                                        <button id="toggleLedButton" class="btn btn-success" disabled>🔗
+                                                            Gyro
+                                                        </button>
+                                                        <button id="button-echo" type="submit"
+                                                            class="btn btn-primary"><i class="bi-soundwave"></i>
+                                                            Echo</button>
+                                                        <button id="button-disconnect" type="submit"
+                                                            class="btn btn-secondary"><i class="bi-x-square"></i>
+                                                            Disconnect</button>
+                                                        <button id="button-reset" type="submit" class="btn btn-info"><i
+                                                                class="bi-arrow-clockwise"></i> Reset</button>
 
 
+
+                                                    </div>
+
+                                                </div>
+                                                <!-- 右側：測試結果卡 -->
+                                                <div class="col-md-6">
+                                                    <div class="card card-secondary">
+                                                        <div class="card-header">
+                                                            <h3 class="card-title">Result</h3>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="mb-3">
+                                                                <strong>Status: </strong>
+                                                                <span id="test-status">N/A</span>
+                                                            </div>
+                                                            <button id="btn-pass" type="button"
+                                                                class="btn btn-success">Pass</button>
+                                                            <button id="btn-fail" type="button"
+                                                                class="btn btn-danger">Fail</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </div>
+                                        <!-- /連線狀態區塊 -->
                                     </div>
-                                    <!-- /連線狀態區塊 -->
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- /.row 藍牙連線功能區 -->
+                        <!-- /.row 藍牙連線功能區 -->
 
-                </div>
-                <!-- /.container-fluid -->
+                    </div>
+                    <!-- /.container-fluid -->
             </section>
             <!-- /.主要內容區 -->
         </div>
@@ -224,5 +258,6 @@
     <script src="js/mcumgr.js?v=6"></script>
     <script src="js/index.js?v=6"></script>
 </body>
+
 
 </html>

@@ -178,12 +178,12 @@ class MCUManager {
         const data = CBOR.decode(message.slice(8).buffer);
         const length = length_hi * 256 + length_lo;
         const group = group_hi * 256 + group_lo;
-        if (group === MGMT_GROUP_ID_IMAGE && id === IMG_MGMT_ID_UPLOAD && (data.rc === 0 || data.rc === undefined) && data.off){
+        if (group === MGMT_GROUP_ID_IMAGE && id === IMG_MGMT_ID_UPLOAD && (data.rc === 0 || data.rc === undefined) && data.off) {
             // Clear timeout since we received a response
             if (this._uploadTimeout) {
                 clearTimeout(this._uploadTimeout);
             }
-            this._uploadOffset = data.off;            
+            this._uploadOffset = data.off;
             this._uploadNext();
             return;
         }
@@ -195,8 +195,12 @@ class MCUManager {
     smpEcho(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_OS, OS_MGMT_ID_ECHO, { d: message });
     }
+    // 修改LED button
     smpLed(message) {
-        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag","led","on"] });
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "led", "on"] });
+    }
+    smpLedoff(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "led", "off"] });
     }
     cmdImageState() {
         return this._sendMessage(MGMT_OP_READ, MGMT_GROUP_ID_IMAGE, IMG_MGMT_ID_STATE);
@@ -281,14 +285,14 @@ class MCUManager {
             throw new Error('Invalid image (wrong load address)');
         }
 
-        const headerSize = view[8] + view[9] * 2**8;
+        const headerSize = view[8] + view[9] * 2 ** 8;
 
         // check protected TLV area size is 0
         if (view[10] !== 0x00 || view[11] !== 0x00) {
             throw new Error('Invalid image (wrong protected TLV area size)');
         }
 
-        const imageSize = view[12] + view[13] * 2**8 + view[14] * 2**16 + view[15] * 2**24;
+        const imageSize = view[12] + view[13] * 2 ** 8 + view[14] * 2 ** 16 + view[15] * 2 ** 24;
         info.imageSize = imageSize;
 
         // check image size is correct
@@ -301,7 +305,7 @@ class MCUManager {
             throw new Error('Invalid image (wrong flags)');
         }
 
-        const version = `${view[20]}.${view[21]}.${view[22] + view[23] * 2**8}`;
+        const version = `${view[20]}.${view[21]}.${view[22] + view[23] * 2 ** 8}`;
         info.version = version;
 
         info.hash = [...new Uint8Array(await this._hash(image.slice(0, imageSize + headerSize)))].map(b => b.toString(16).padStart(2, '0')).join('');
