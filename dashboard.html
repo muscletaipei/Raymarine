@@ -26,12 +26,14 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="#">
-                        <span id="device-name">Raymarine</span>
+                        <div class="mt-3" ><strong>Device Name:</strong><span id="device-name"></span></div>
+                        
                     </a>
                 </li>
             </ul>
         </nav>
         <!-- /頂部導覽列 -->
+        
 
         <!-- 左側選單 Side bar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -70,23 +72,23 @@
             <section class="content">
                 <div class="container-fluid">
                     <!-- 第一排：統計卡片 -->
-                    <!-- <div class="row">
+                    <div class="row">
                         <div class="col-lg-3 col-6">
                             <div class="small-box bg-info">
                                 <div class="inner">
-                                    <h3>150</h3>
-                                    <p>New Orders</p>
+                                    <h3>20</h3>
+                                    <p>Test Items</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-shopping-cart"></i>
                                 </div>
                                 <a href="#" class="small-box-footer">
-                                    More info <i class="fas fa-arrow-circle-right"></i>
+                                    ------ <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
-                    </div> -->
-                    <!-- /.row -->
+                    </div>
+                    <!-- </.row> -->
 
                     <!-- 藍牙連線功能區 -->
                     <div class="row">
@@ -137,90 +139,183 @@
                                     <!-- 已連線狀態 -->
                                     <div class="content" id="connected-screen" style="display: none;">
                                         <div class="container">
-                                            <h3>Images</h3>
-                                            <div id="image-list"></div>
-                                            <div>
-                                                <button id="button-image-state" type="submit" class="btn btn-info"><i
-                                                        class="bi-arrow-down-circle"></i> Refresh</button>
-                                                <button id="button-erase" type="submit" class="btn btn-warning"><i
-                                                        class="bi-eraser-fill"></i> Erase</button>
-                                                <button id="button-test" type="submit" class="btn btn-primary"
-                                                    disabled><i class="bi-question-square"></i> Test</button>
-                                                <button id="button-confirm" type="submit" class="btn btn-success"
-                                                    disabled><i class="bi-check2-square"></i> Confirm</button>
-                                            </div>
                                             <hr />
-                                            <h3>Image Upload</h3>
-                                            <div class="form-group">
-                                                <input type="file" class="form-control" id="file-image" />
-                                            </div>
-                                            <div class="image">
-                                                <div class="form-group">
-                                                    <div id="file-status">Select image file (.img)</div>
-                                                    <div id="file-info"></div>
-                                                </div>
-                                                <button class="btn btn-primary" id="file-upload" disabled><i
-                                                        class="bi-upload"></i> Upload</button>
-                                            </div>
+
+                                            <!-- 功能測試區，左右兩欄 --> 
+                                            <h3>Function Test</h3>
+                                            <button id="button-disconnect" type="submit" class="btn btn-secondary"><i class="bi-x-square"></i> Disconnect</button>
+                                            <button id="button-reset" type="submit" class="btn btn-info"><i class="bi-arrow-clockwise"></i> Reset</button>
                                             <hr />
-                                            <!-- <h3>Function Test</h3> -->
 
-                                            <div class="container mt-5 text-center">
-                                                <h1>Function Test</h1>
-
+                                            <!-- LED 控制 -->
+                                            <div class="row"> 
+                                                <!-- 左欄：LED 控制卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-primary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">LED 開</h3> 
+                                                        </div> <div class="card-body"> 
+                                                            <!-- 修改後不使用 prompt，直接送出 SMP LED on/off --> 
+                                                            <button id="button-led" type="button" class="btn btn-primary"> 💡 LED ON </button> 
+                                                        </div> 
+                                                    </div> 
+                                                </div> 
+                                                <!-- 右欄：測試結果卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-secondary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Result</h3> 
+                                                        </div> 
+                                                        <div class="card-body"> 
+                                                            <div class="mb-3"> 
+                                                                <strong>Status: </strong> 
+                                                                <span id="test-status">N/A
+                                                                    </span> 
+                                                        </div>   
+                                                    </div> 
+                                                </div> 
                                             </div>
-                                            <hr />
-                                            <!-- <h3>Function Test</h3> -->
-                                            <!-- 左側：LED 控制卡 -->
-                                            <div class="col-mb-3">
-                                                <div class="card card-primary">
-                                                    <div class="card-header">
-                                                        <h3 class="card-title">Test Item</h3>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <button id="button-led" type="submit" class="btn btn-primary"><i
-                                                                class="bi-soundwave"></i>💡 LED ON</button>
-                                                        <button id="button-led-off" type="submit"
-                                                            class="btn btn-primary"><i class="bi-soundwave"></i>💡 LED
-                                                            Off</button>
 
-                                                        <button id="toggleLedButton" class="btn btn-success" disabled>🔗
-                                                            Gyro
-                                                        </button>
-                                                        <button id="button-echo" type="submit"
-                                                            class="btn btn-primary"><i class="bi-soundwave"></i>
-                                                            Echo</button>
-                                                        <button id="button-disconnect" type="submit"
-                                                            class="btn btn-secondary"><i class="bi-x-square"></i>
-                                                            Disconnect</button>
-                                                        <button id="button-reset" type="submit" class="btn btn-info"><i
-                                                                class="bi-arrow-clockwise"></i> Reset</button>
+                                            <!-- LED 控制 -->
+                                            <div class="row"> 
+                                                <!-- 左欄：LED 控制卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-primary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">LED 關</h3> 
+                                                        </div> <div class="card-body"> 
+                                                            <button id="button-led-off" type="button" class="btn btn-primary"> 💡 LED Off </button>
+                                                        </div> 
+                                                    </div> 
+                                                </div> 
+                                                <!-- 右欄：測試結果卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-secondary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Result</h3> 
+                                                        </div> 
+                                                        <div class="card-body"> 
+                                                            <div class="mb-3"> 
+                                                                <strong>Status: </strong> 
+                                                                <span id="test-status">N/A
+                                                                    </span> 
+                                                        </div>   
+                                                    </div> 
+                                                </div> 
+                                            </div>
+
+                                            <!-- Gyro 控制 -->
+                                            <div class="row"> 
+                                                <!-- 左欄：LED 控制卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-primary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Gyro</h3> 
+                                                        </div> <div class="card-body"> 
+                                                            <button id="toggleLedButton" class="btn btn-success" disabled>🔗 Gyro </button>
+                                                        </div> 
+                                                    </div> 
+                                                </div> 
+                                                <!-- 右欄：測試結果卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-secondary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Result</h3> 
+                                                        </div> 
+                                                        <div class="card-body"> 
+                                                            <div class="mb-3"> 
+                                                                <strong>Status: </strong> 
+                                                                <span id="test-status">N/A
+                                                                    </span> 
+                                                        </div>   
+                                                    </div> 
+                                                </div> 
+                                            </div>
+
+                                            <!-- Echo 控制 -->
+                                            <div class="row"> 
+                                                <!-- 左欄：LED 控制卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-primary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Echo</h3> 
+                                                        </div> <div class="card-body"> 
+                                                            <button id="button-echo" type="submit" class="btn btn-primary"><i class="bi-soundwave"></i> Echo</button>
+                                                        </div> 
+                                                    </div> 
+                                                </div> 
+                                                <!-- 右欄：測試結果卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-secondary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Result</h3> 
+                                                        </div> 
+                                                        <div class="card-body"> 
+                                                            <div class="mb-3"> 
+                                                                <strong>Status: </strong> 
+                                                                <span id="test-status">N/A
+                                                                    </span> 
+                                                        </div>   
+                                                    </div> 
+                                                </div> 
+                                            </div>
+
+                                            <!-- 電量偵測  -->
+                                            <div class="row"> 
+                                                <!-- 左欄：LED 控制卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-primary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">電量偵測</h3> 
+                                                        </div> <div class="card-body"> 
+                                                            <button id="button-echo" type="submit" class="btn btn-primary"><i class="bi-soundwave"></i> 量測</button>
+                                                        </div> 
+                                                    </div> 
+                                                </div> 
+                                                <!-- 右欄：測試結果卡 --> 
+                                                <div class="col-md-6"> 
+                                                    <div class="card card-secondary"> 
+                                                        <div class="card-header"> 
+                                                            <h3 class="card-title">Result</h3> 
+                                                        </div> 
+                                                        <div class="card-body"> 
+                                                            <div class="mb-3"> 
+                                                                <strong>Status: </strong> 
+                                                                <span id="test-status">N/A
+                                                                    </span> 
+                                                        </div>   
+                                                    </div> 
+                                                </div> 
+                                            </div>
 
 
-
-                                                    </div>
-
-                                                </div>
-                                                <!-- 右側：測試結果卡 -->
+                                            <!-- /.info-box -->
+                                            <div class="info-box mb-3 text-bg-success">
+                                            <span class="info-box-icon"> <i class="bi bi-heart-fill"></i> </span>
+                                            <div class="info-box-content">
                                                 <div class="col-md-6">
-                                                    <div class="card card-secondary">
-                                                        <div class="card-header">
-                                                            <h3 class="card-title">Result</h3>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="mb-3">
-                                                                <strong>Status: </strong>
-                                                                <span id="test-status">N/A</span>
-                                                            </div>
-                                                            <button id="btn-pass" type="button"
-                                                                class="btn btn-success">Pass</button>
-                                                            <button id="btn-fail" type="button"
-                                                                class="btn btn-danger">Fail</button>
-                                                        </div>
-                                                    </div>
+                                                    <h3>Images</h3>
+                                                    <div id="image-list"></div>
+                                                    <button id="button-image-state" type="submit" class="btn btn-info"><i class="bi-arrow-down-circle"></i> Refresh</button>
+                                                    <button id="button-erase" type="submit" class="btn btn-warning"><i class="bi-eraser-fill"></i> Erase</button>
+                                                    <button id="button-test" type="submit" class="btn btn-primary" disabled><i class="bi-question-square"></i> Test</button>
+                                                    <button id="button-confirm" type="submit" class="btn btn-success" disabled><i class="bi-check2-square"></i> Confirm</button>
+                                                 
+                                                <h3>Image Upload</h3>
+                                                <div class="form-group">
+                                                    <input type="file" class="form-control" id="file-image" />
                                                 </div>
-
+                                                <div class="image">
+                                                    <div class="form-group">
+                                                        <div id="file-status">Select image file (.img)</div>
+                                                        <div id="file-info"></div>
+                                                    </div>
+                                                    <button class="btn btn-primary" id="file-upload" disabled><i
+                                                            class="bi-upload"></i> Upload</button>
+                                                </div>
+                                                </div>                                                
                                             </div>
+                                            <!-- /.info-box-content -->
                                         </div>
                                         <!-- /連線狀態區塊 -->
                                     </div>

@@ -56,7 +56,7 @@ mcumgr.onConnecting(() => {
 mcumgr.onConnect(() => {
     deviceName.innerText = mcumgr.name;
     // 修改藍芽連線區的顯示文字為「連線成功」
-    document.getElementById("bluetooth-is-available-message").innerText = "連線成功";
+    document.getElementById("bluetooth-is-available-message").innerText = "Connect Success";
     screens.connecting.style.display = 'none';
     screens.initial.style.display = 'none';
     screens.connected.style.display = 'block';
@@ -173,6 +173,27 @@ connectButton.addEventListener('click', async () => {
     };
     await mcumgr.connect(filters);
 });
+
+
+// connection button new
+// connectButton.addEventListener('click', async () => {
+//     let filters = null;
+//     if (deviceNameInput.value) {
+//         let input = deviceNameInput.value.trim();
+//         // 假設格式為 XX:XX:XX:XX:XX:XX，取後兩組 (例如 E1 和 91)
+//         let parts = input.split(':');
+//         if (parts.length >= 2) {
+//             let lastTwo = parts.slice(-2).join('');
+//             filters = [{ namePrefix: lastTwo }];
+//             console.log("使用的搜尋關鍵字:", lastTwo);
+//         } else {
+//             filters = [{ namePrefix: input }];
+//         }
+//     }
+//     await mcumgr.connect(filters);
+// });
+
+
 
 disconnectButton.addEventListener('click', async () => {
     mcumgr.disconnect();
