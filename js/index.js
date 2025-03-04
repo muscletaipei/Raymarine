@@ -8,10 +8,18 @@ const deviceName = document.getElementById('device-name');
 const deviceNameInput = document.getElementById('device-name-input');
 const connectButton = document.getElementById('button-connect');
 const echoButton = document.getElementById('button-echo');
-// 修改LED button
+
+// 修改test button
 const ledButton = document.getElementById('button-led');
 const ledOffButton = document.getElementById('button-led-off');
 
+const compassButton = document.getElementById('button-compass');
+const speakerButton = document.getElementById('button-speaker');
+const batteryButton = document.getElementById('button-battery');
+const brightnessButtonUp = document.getElementById('button-brightness-up');
+const brightnessButtonuDown = document.getElementById('button-brightness-down');
+
+// 修改test button
 
 const disconnectButton = document.getElementById('button-disconnect');
 const resetButton = document.getElementById('button-reset');
@@ -90,7 +98,7 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             }
             break;
         case MGMT_GROUP_ID_SHELL:
-            alert(data.o);
+            alert(data.ret);
             break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
@@ -203,7 +211,8 @@ echoButton.addEventListener('click', async () => {
     const message = prompt('Enter a text message to send', 'Hello World!');
     await mcumgr.smpEcho(message);
 });
-// 修改LED button
+
+// 修改test button
 ledButton.addEventListener('click', async () => {
     const message = prompt('LED on', 'LED on!');
     await mcumgr.smpLed(message);
@@ -213,6 +222,31 @@ ledOffButton.addEventListener('click', async () => {
     const message = prompt('LED off', 'LED off!');
     await mcumgr.smpLedoff(message);
 });
+compassButton.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpCompass(message);
+});
+speakerButton.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpSpeaker(message);
+});
+batteryButton.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpBattery(message);
+});
+brightnessButtonUp.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpBrightnessUp(message);
+});
+brightnessButtonuDown.addEventListener('click', async () => {
+    const message = prompt('LED off', 'LED off!');
+    await mcumgr.smpBrightnessDown(message);
+});
+
+
+
+// 修改test button
+
 
 resetButton.addEventListener('click', async () => {
     await mcumgr.cmdReset();

@@ -37,6 +37,9 @@ class MCUManager {
     constructor(di = {}) {
         this.SERVICE_UUID = '8d53dc1d-1db7-4cd3-868b-8a527460aa84';
         this.CHARACTERISTIC_UUID = 'da2e7828-fbce-4e01-ae9e-261174997c48';
+        // this.SERVICE_UUID = '9eee0100-b5c6-4a92-bec8-d2555e86a221';
+        // this.CHARACTERISTIC_UUID = '9eee0101-b5c6-4a92-bec8-d2555e86a221';
+
         this._mtu = 400;
         this._device = null;
         this._service = null;
@@ -195,13 +198,31 @@ class MCUManager {
     smpEcho(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_OS, OS_MGMT_ID_ECHO, { d: message });
     }
-    // 修改LED button
+    // 修改test button
     smpLed(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "led", "on"] });
     }
     smpLedoff(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "led", "off"] });
     }
+    smpCompass(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["get", "compass", "values"] });
+    }
+    smpSpeaker(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["Control", "speaker"] });
+    }
+    smpBattery(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["get", "battery", "valtage"] });
+    }
+    smpBrightnessUp(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["Control", "brightness", "up"] });
+    }
+    smpBrightnessDown(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["Control", "brightness", "down"] });
+    }
+
+    // 修改test button
+
     cmdImageState() {
         return this._sendMessage(MGMT_OP_READ, MGMT_GROUP_ID_IMAGE, IMG_MGMT_ID_STATE);
     }
