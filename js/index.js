@@ -98,7 +98,7 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             }
             break;
         case MGMT_GROUP_ID_SHELL:
-            alert(data.ret);
+            alert(data.o);
             break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
@@ -181,27 +181,6 @@ connectButton.addEventListener('click', async () => {
     };
     await mcumgr.connect(filters);
 });
-
-
-// connection button new
-// connectButton.addEventListener('click', async () => {
-//     let filters = null;
-//     if (deviceNameInput.value) {
-//         let input = deviceNameInput.value.trim();
-//         // 假設格式為 XX:XX:XX:XX:XX:XX，取後兩組 (例如 E1 和 91)
-//         let parts = input.split(':');
-//         if (parts.length >= 2) {
-//             let lastTwo = parts.slice(-2).join('');
-//             filters = [{ namePrefix: lastTwo }];
-//             console.log("使用的搜尋關鍵字:", lastTwo);
-//         } else {
-//             filters = [{ namePrefix: input }];
-//         }
-//     }
-//     await mcumgr.connect(filters);
-// });
-
-
 
 disconnectButton.addEventListener('click', async () => {
     mcumgr.disconnect();
@@ -286,3 +265,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// 過濾Bt mac字串
+document.getElementById("mac-input").addEventListener("input", function () {
+    var mac = this.value.trim();
+    var parts = mac.split(":");
+    if (parts.length >= 2) {
+        // 取最後兩組，例如 ["E1", "91"] → "E191"
+        var filtered = parts.slice(-2).join("");
+        // 自動填入 Device name (optional) 輸入框中
+        document.getElementById("device-name-input").value = filtered;
+    }
+});
