@@ -62,8 +62,8 @@ mcumgr.onConnecting(() => {
     screens.connecting.style.display = 'block';
 });
 mcumgr.onConnect(() => {
+    // 更新畫面上顯示的裝置名稱
     deviceName.innerText = mcumgr.name;
-    // 修改藍芽連線區的顯示文字為「連線成功」
     document.getElementById("bluetooth-is-available-message").innerText = "Connect Success";
     screens.connecting.style.display = 'none';
     screens.initial.style.display = 'none';
@@ -73,6 +73,22 @@ mcumgr.onConnect(() => {
     localStorage.setItem("deviceId", mcumgr._device.id);
     // 轉跳到 test.html 頁面
     // window.location.href = "test.html";
+
+    // 重置 LED 狀態欄位
+    // 在 onConnect 回呼中重置 LED 狀態
+    document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('compass-status').innerText = "N/A";
+    document.getElementById('speaker-status').innerText = "N/A";
+    document.getElementById('brightness-up-status').innerText = "N/A";
+    document.getElementById('brightness-down-status').innerText = "N/A";
+    document.getElementById('battery-status').innerText = "N/A";
+
+
+    // 重新初始化 log 陣列，並記錄 device name 與 S/N
+    logEntries = [];
+    addLogEntry("Device", `Connected: ${mcumgr.name}`);
+    // 查詢影像狀態等
     mcumgr.cmdImageState();
 });
 mcumgr.onDisconnect(() => {
@@ -80,6 +96,17 @@ mcumgr.onDisconnect(() => {
     screens.connecting.style.display = 'none';
     screens.connected.style.display = 'none';
     screens.initial.style.display = 'block';
+
+    // 清空 LED 狀態與 log
+    document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    logEntries = [];
+
+    // Clear BT mac input
+    document.getElementById("mac-input").value = "";
+    document.getElementById("device-name-input").value = "";
+    document.getElementById("sn-input").value = "";
+
 });
 
 mcumgr.onMessage(({ op, group, id, data, length }) => {
@@ -98,7 +125,27 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             }
             break;
         case MGMT_GROUP_ID_SHELL:
-            alert(data.o);
+            // alert(data.o);
+            const output = data.o.trim();
+            // LED ON 回應處理
+            if (output === "LED turned on") {
+                const ledOnStatusElem = document.getElementById('led-on-status');
+                ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("LED ON", "Pass");
+            }
+            // LED OFF 回應處理
+            else if (output === "LED turned off") {
+                const ledOffStatusElem = document.getElementById('led-off-status');
+                ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("LED OFF", "Pass");
+            } else {
+                // 若回傳內容不符合預期，將狀態更新為 Fail（依需求可以分別更新）
+                const ledOnStatusElem = document.getElementById('led-on-status');
+                ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                addLogEntry("LED ON", "Fail");
+                ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                addLogEntry("LED ON", "Fail");
+            }
             break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
@@ -192,15 +239,34 @@ echoButton.addEventListener('click', async () => {
 });
 
 // 修改test button
+
+// 全域用來儲存 log 記錄的陣列
+let logEntries = [];
+
+// 工具函式：加入一筆 log 記錄（包含時間戳）
+function addLogEntry(testName, status) {
+    const timestamp = new Date().toLocaleString();
+    // 這邊假設 deviceName.innerText 即為當前裝置名稱
+    const currentDeviceName = deviceName.innerText || "Unknown Device";
+    // 取得 S/N 輸入欄的值，若未填寫則顯示 "No S/N"
+    const snValue = document.getElementById("sn-input").value || "No S/N";
+    logEntries.push(`[${timestamp}] ${currentDeviceName} - S/N: ${snValue} - ${testName}: ${status}`);
+}
+
+
+// LED ON / LED OFF 的按鈕事件處理
 ledButton.addEventListener('click', async () => {
-    const message = prompt('LED on', 'LED on!');
-    await mcumgr.smpLed(message);
+    await mcumgr.smpLed();
+    // 可選擇在發送命令時先加入記錄，例如暫時標記為等待回應
+    addLogEntry("LED ON", "");
 });
 
 ledOffButton.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpLedoff(message);
+    await mcumgr.smpLedoff();
+    addLogEntry("LED OFF", "");
 });
+
+
 compassButton.addEventListener('click', async () => {
     const message = prompt('LED off', 'LED off!');
     await mcumgr.smpCompass(message);
@@ -222,7 +288,25 @@ brightnessButtonuDown.addEventListener('click', async () => {
     await mcumgr.smpBrightnessDown(message);
 });
 
-
+// 輸出 log 按鈕的事件處理
+const exportLogButton = document.getElementById("export-log");
+exportLogButton.addEventListener("click", function () {
+    // 將 log 陣列轉成字串，每行一筆記錄
+    const logText = logEntries.join("\n");
+    // 透過 Blob 建立文字檔
+    const blob = new Blob([logText], { type: "text/plain" });
+    // 產生 URL
+    const url = window.URL.createObjectURL(blob);
+    // 建立一個隱藏的 <a> 標籤，模擬點擊下載
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "test_log.txt";
+    document.body.appendChild(a);
+    a.click();
+    // 移除 <a> 標籤並釋放 URL 物件
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+});
 
 // 修改test button
 

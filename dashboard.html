@@ -65,14 +65,13 @@
             <section class="content-header">
                 <div class="container-fluid">
                     <h1>Dashboard</h1>
-                </div>
             </section>
 
             <!-- 主要內容區 -->
             <section class="content">
                 <div class="container-fluid">
                     <!-- 第一排：統計卡片 -->
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="col-lg-3 col-6">
                             <div class="small-box bg-info">
                                 <div class="inner">
@@ -87,7 +86,7 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     <!-- </.row> -->
 
                     <!-- 藍牙連線功能區 -->
@@ -148,15 +147,9 @@
                                 <!-- 已連線狀態 -->
                                 <div class="content" id="connected-screen" style="display: none;">
                                     <div class="container">
-                                        <hr />
-
                                         <!-- 功能測試區，左右兩欄 -->
                                         <h3>Function Test</h3>
-                                        <button id="button-disconnect" type="submit" class="btn btn-secondary"><i
-                                                class="bi-x-square"></i> Disconnect</button>
-                                        
                                         <hr />
-
                                         <!-- LED 控制 -->
                                         <div class="row">
                                             <!-- 左欄：LED 控制卡 -->
@@ -166,36 +159,44 @@
                                                         <h3 class="card-title">Test Items</h3>
                                                     </div>
                                                     <div class="card-body">
-                                                        <!-- 修改後不使用 prompt，直接送出 SMP LED on/off -->
-                                                        <button id="button-led" type="button" class="btn btn-primary">
-                                                            LED ON </button>
+                                                        <!-- S/N 輸入欄位 -->
+                                                        <div class="form-group">
+                                                            <label for="sn-input">S/N:</label>
+                                                            <input type="text" class="form-control" id="sn-input"
+                                                                placeholder="請輸入 S/N">
+                                                        </div>
+
+                                                        <!-- LED ON -->
+                                                        <button id="button-led" type="button"
+                                                            class="btn btn-primary">LED ON</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
-                                                            </span>
+                                                            <strong>LED On Status: </strong>
+                                                            <span id="led-on-status" class="ml-2"><span
+                                                                    class="badge badge-warning">N/A</span></span>
                                                         </div>
                                                         <hr />
+                                                        <!-- LED OFF -->
                                                         <button id="button-led-off" type="button"
-                                                            class="btn btn-primary"> LED Off </button>
+                                                            class="btn btn-primary">LED OFF</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
-                                                            </span>
+                                                            <strong>LED Off Status: </strong>
+                                                            <span id="led-off-status"><span
+                                                                    class="badge badge-warning">N/A</span></span>
                                                         </div>
                                                         <hr />
                                                         <button id="button-compass" type="button"
                                                             class="btn btn-primary"> Compass </button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A</span>
+                                                            <strong>Compass Status: </strong>
+                                                            <span id="compass-status">N/A</span>
                                                         </div>
                                                         <hr />
                                                         <button id="button-speaker" type="button"
                                                             class="btn btn-primary"><i class="bi-soundwave"></i>
                                                             Speaker</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
+                                                            <strong>Speaker Status: </strong>
+                                                            <span id="speaker-status">N/A
                                                             </span>
                                                         </div>
                                                         <hr />
@@ -203,8 +204,8 @@
                                                             class="btn btn-primary"><i class="bi-soundwave"></i>
                                                             brightness up</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
+                                                            <strong>brightness up Status: </strong>
+                                                            <span id="brightness-up-status">N/A
                                                             </span>
                                                         </div>
                                                         <hr />
@@ -212,8 +213,8 @@
                                                             class="btn btn-primary"><i class="bi-soundwave"></i>
                                                             brightness down</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
+                                                            <strong>brightness down Status: </strong>
+                                                            <span id="brightness-down-status">N/A
                                                             </span>
                                                         </div>
                                                         <hr />
@@ -221,9 +222,23 @@
                                                             class="btn btn-primary"><i class="bi-soundwave"></i>
                                                             Battery</button>
                                                         <div class="mb-3">
-                                                            <strong>Status: </strong>
-                                                            <span id="test-status">N/A
+                                                            <strong>Battery Status: </strong>
+                                                            <span id="battery-status">N/A
                                                             </span>
+                                                        </div>
+                                                        <!-- Log 輸出區塊 -->
+                                                        <div class="card card-secondary">
+                                                            <div class="card-header">
+                                                                <h3 class="card-title">Log 輸出</h3>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <button id="export-log" type="button"
+                                                                    class="btn btn-success">輸出 Log</button>
+                                                                <button id="button-disconnect" type="submit"
+                                                                    class="btn btn-secondary"><i
+                                                                        class="bi-x-square"></i>
+                                                                    Disconnect</button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
