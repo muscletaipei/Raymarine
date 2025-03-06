@@ -135,20 +135,30 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             if (output === "LED turned on") {
                 const ledOnStatusElem = document.getElementById('led-on-status');
                 ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("LED ON", "Pass");
+                addLogEntry("LEDON", "PASS");
+                pendingLEDON = false;
             }
             // LED OFF 回應處理
             else if (output === "LED turned off") {
                 const ledOffStatusElem = document.getElementById('led-off-status');
                 ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("LED OFF", "Pass");
-            } else {
-                // 若回傳內容不符合預期，將狀態更新為 Fail（依需求可以分別更新）
-                const ledOnStatusElem = document.getElementById('led-on-status');
-                ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                addLogEntry("LED ON", "Fail");
-                ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                addLogEntry("LED ON", "Fail");
+                addLogEntry("LEDOFF", "PASS");
+                pendingLEDOFF = false;
+            }
+            // 若回傳內容不符合預期，依 pending 狀態分別更新
+            else {
+                if (pendingLEDON) {
+                    const ledOnStatusElem = document.getElementById('led-on-status');
+                    ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("LEDON", "FAIL");
+                    pendingLEDON = false;
+                }
+                if (pendingLEDOFF) {
+                    const ledOffStatusElem = document.getElementById('led-off-status');
+                    ledOffStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("LEDOFF", "FAIL");
+                    pendingLEDOFF = false;
+                }
             }
             break;
         case MGMT_GROUP_ID_IMAGE:
@@ -244,16 +254,19 @@ echoButton.addEventListener('click', async () => {
 
 // 修改test button
 
+// 新增全域變數，記錄 LED 按鈕是否等待回應
+let pendingLEDON = false;
+let pendingLEDOFF = false;
+
 // 全域用來儲存 log 記錄的陣列
 let logEntries = [];
 
-// 工具函式：加入一筆 log 記錄（包含時間戳）
+// 工具函式：加入一筆 log 記錄（包含時間戳、device name 與 S/N）
 function addLogEntry(testName, status) {
     const timestamp = new Date().toLocaleString();
-    // 這邊假設 deviceName.innerText 即為當前裝置名稱
     const currentDeviceName = deviceName.innerText || "Unknown Device";
-    // 取得 S/N 輸入欄的值，若未填寫則顯示 "No S/N"
     const snValue = document.getElementById("sn-input").value || "No S/N";
+    // testName 使用大寫關鍵字，例如 "LEDON" 或 "LEDOFF"
     logEntries.push(`[${timestamp}] ${currentDeviceName} - S/N: ${snValue} - ${testName}: ${status}`);
 }
 
@@ -261,6 +274,7 @@ function addLogEntry(testName, status) {
 // LED ON / LED OFF 的按鈕事件處理
 ledButton.addEventListener('click', async () => {
     // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
+    pendingLEDON = true;
     ledButton.disabled = true;
     ledButton.classList.add('disabled');
     await mcumgr.smpLed();
@@ -269,6 +283,7 @@ ledButton.addEventListener('click', async () => {
 });
 
 ledOffButton.addEventListener('click', async () => {
+    pendingLEDOFF = true;
     ledOffButton.disabled = true;
     ledOffButton.classList.add('disabled');
     await mcumgr.smpLedoff();
@@ -299,28 +314,29 @@ brightnessButtonuDown.addEventListener('click', async () => {
 
 // 輸出 log 按鈕的事件處理
 const exportLogButton = document.getElementById("export-log");
+// 輸出 XML Log 按鈕事件處理
 exportLogButton.addEventListener("click", function () {
-    // 取得 LED ON 與 LED OFF 的狀態文字（假設 badge 內的文字為 "Pass" 或 "Fail"）
-    const ledOnStatusElem = document.getElementById("led-on-status");
-    const ledOffStatusElem = document.getElementById("led-off-status");
-    const ledOnStatus = ledOnStatusElem.innerText.trim();
-    const ledOffStatus = ledOffStatusElem.innerText.trim();
-
-    // 判斷整體測試結果：若兩項皆 Pass 則為 P，否則為 F
-    let overall = "P";
-    if (ledOnStatus !== "Pass" || ledOffStatus !== "Pass") {
-        overall = "F";
+    // 取得 LED ON 與 LED OFF 的狀態文字
+    const ledOnStatus = document.getElementById("led-on-status").textContent.trim();
+    const ledOffStatus = document.getElementById("led-off-status").textContent.trim();
+    // 判斷整體測試結果：若兩項皆 PASS 則整體 PASS，否則 FAIL
+    let overall = "PASS";
+    if (ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS") {
+        overall = "FAIL";
     }
-
-    // 取得 S/N 欄位值（若未填寫，可自行決定如何處理）
+    // 取得 S/N 與 BT MAC 輸入欄的值
     const snValue = document.getElementById("sn-input").value.trim();
+    const btMacValue = document.getElementById("mac-input").value.trim();
 
-    // 根據規則組合檔案名稱：例如 "ms5564P_123456789.txt"
-    const fileName = `ms5564${overall}_${snValue}.txt`;
+    // 組成檔案名稱，例如 "ms5564P_123456789.xml" 或 "ms5564F_123456789.xml"
+    const fileName = `ms5564${overall === "PASS" ? "P" : "F"}_${snValue}.xml`;
 
-    // 將 log 陣列轉成文字檔內容
-    const logText = logEntries.join("\n");
-    const blob = new Blob([logText], { type: "text/plain" });
+    // 產生 XML 格式內容，順序依序為 SN、LEDON、LEDOFF 與 BT_MAC
+    const xmlContent = `<TestInfo>
+    <TestItem Key="SN">${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem></TestInfo>`;
+
+    // 使用 Blob 產生 XML 檔案並觸發下載
+    const blob = new Blob([xmlContent], { type: "application/xml" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
