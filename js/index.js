@@ -74,7 +74,11 @@ mcumgr.onConnect(() => {
     // 轉跳到 test.html 頁面
     // window.location.href = "test.html";
 
-    // 重置 LED 狀態欄位
+    // 重置 LED 按鈕：移除 disabled 屬性和 class
+    ledButton.disabled = false;
+    ledButton.classList.remove('disabled');
+    ledOffButton.disabled = false;
+    ledOffButton.classList.remove('disabled');
     // 在 onConnect 回呼中重置 LED 狀態
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -256,12 +260,17 @@ function addLogEntry(testName, status) {
 
 // LED ON / LED OFF 的按鈕事件處理
 ledButton.addEventListener('click', async () => {
+    // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
+    ledButton.disabled = true;
+    ledButton.classList.add('disabled');
     await mcumgr.smpLed();
     // 可選擇在發送命令時先加入記錄，例如暫時標記為等待回應
     addLogEntry("LED ON", "");
 });
 
 ledOffButton.addEventListener('click', async () => {
+    ledOffButton.disabled = true;
+    ledOffButton.classList.add('disabled');
     await mcumgr.smpLedoff();
     addLogEntry("LED OFF", "");
 });
