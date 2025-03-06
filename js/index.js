@@ -291,19 +291,33 @@ brightnessButtonuDown.addEventListener('click', async () => {
 // 輸出 log 按鈕的事件處理
 const exportLogButton = document.getElementById("export-log");
 exportLogButton.addEventListener("click", function () {
-    // 將 log 陣列轉成字串，每行一筆記錄
+    // 取得 LED ON 與 LED OFF 的狀態文字（假設 badge 內的文字為 "Pass" 或 "Fail"）
+    const ledOnStatusElem = document.getElementById("led-on-status");
+    const ledOffStatusElem = document.getElementById("led-off-status");
+    const ledOnStatus = ledOnStatusElem.innerText.trim();
+    const ledOffStatus = ledOffStatusElem.innerText.trim();
+
+    // 判斷整體測試結果：若兩項皆 Pass 則為 P，否則為 F
+    let overall = "P";
+    if (ledOnStatus !== "Pass" || ledOffStatus !== "Pass") {
+        overall = "F";
+    }
+
+    // 取得 S/N 欄位值（若未填寫，可自行決定如何處理）
+    const snValue = document.getElementById("sn-input").value.trim();
+
+    // 根據規則組合檔案名稱：例如 "ms5564P_123456789.txt"
+    const fileName = `ms5564${overall}_${snValue}.txt`;
+
+    // 將 log 陣列轉成文字檔內容
     const logText = logEntries.join("\n");
-    // 透過 Blob 建立文字檔
     const blob = new Blob([logText], { type: "text/plain" });
-    // 產生 URL
     const url = window.URL.createObjectURL(blob);
-    // 建立一個隱藏的 <a> 標籤，模擬點擊下載
     const a = document.createElement("a");
     a.href = url;
-    a.download = "test_log.txt";
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    // 移除 <a> 標籤並釋放 URL 物件
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 });
