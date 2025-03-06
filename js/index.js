@@ -12,12 +12,11 @@ const echoButton = document.getElementById('button-echo');
 // 修改test button
 const ledButton = document.getElementById('button-led');
 const ledOffButton = document.getElementById('button-led-off');
-
 const compassButton = document.getElementById('button-compass');
 const speakerButton = document.getElementById('button-speaker');
-const batteryButton = document.getElementById('button-battery');
 const brightnessButtonUp = document.getElementById('button-brightness-up');
-const brightnessButtonuDown = document.getElementById('button-brightness-down');
+const brightnessButtonDown = document.getElementById('button-brightness-down');
+const batteryButton = document.getElementById('button-battery');
 
 // 修改test button
 
@@ -79,14 +78,30 @@ mcumgr.onConnect(() => {
     ledButton.classList.remove('disabled');
     ledOffButton.disabled = false;
     ledOffButton.classList.remove('disabled');
+
+    compassButton.disabled = false;
+    compassButton.classList.remove('disabled');
+
+    speakerButton.disabled = false;
+    speakerButton.classList.remove('disable');
+
+    brightnessButtonUp.disabled = false;
+    brightnessButtonUp.classList.remove('disable');;
+    
+    brightnessButtonDown.disabled = false;
+    brightnessButtonDown.classList.remove('disable');
+    
+    batteryButton.disabled = false;
+    batteryButton.classList.remove('disable');
+
     // 在 onConnect 回呼中重置 LED 狀態
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('compass-status').innerText = "N/A";
-    document.getElementById('speaker-status').innerText = "N/A";
-    document.getElementById('brightness-up-status').innerText = "N/A";
-    document.getElementById('brightness-down-status').innerText = "N/A";
-    document.getElementById('battery-status').innerText = "N/A";
+    document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('speaker-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';;
+    document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
 
 
     // 重新初始化 log 陣列，並記錄 device name 與 S/N
@@ -101,9 +116,14 @@ mcumgr.onDisconnect(() => {
     screens.connected.style.display = 'none';
     screens.initial.style.display = 'block';
 
-    // 清空 LED 狀態與 log
+    // 清空 test item 狀態與 log
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('speaker-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     logEntries = [];
 
     // Clear BT mac input
@@ -145,6 +165,41 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 addLogEntry("LEDOFF", "PASS");
                 pendingLEDOFF = false;
             }
+            // Compass 回應處理
+            else if (output === "get compass values") {
+                const compassStatusElem = document.getElementById('compass-statuss');
+                compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("COMPASS", "PASS");
+                pendingCOMPASS = false;
+            }
+            // Speaker 回應處理
+            else if (output === "Control speaker") {
+                const speakerStatusElem = document.getElementById('speaker-status');
+                speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("SPEAKER", "PASS");
+                pendingSPEAKER = false;
+            }
+            // brightness up 回應處理
+            else if (output === "Control bightness up") {
+                const brightnessUpStatusElem = document.getElementById('brightness-up-status');
+                brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("BRIGHTNESSUP", "PASS");
+                pendingBRIGHTNESSUP = false;
+            }
+            // brightness down 回應處理
+            else if (output === "Control bightness down") {
+                const brightnessDownStatusElem = document.getElementById('brightness-down-status');
+                brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("BRIGHTNESSDOWN", "PASS");
+                pendingBRIGHTNESSDOWN = false;
+            }
+            // battery 回應處理
+            else if (output === "get battery voltage") {
+                const batteryStatusElem = document.getElementById('battery-status');
+                batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                addLogEntry("BATTERY", "PASS");
+                pendingBATTERY = false;
+            }
             // 若回傳內容不符合預期，依 pending 狀態分別更新
             else {
                 if (pendingLEDON) {
@@ -158,6 +213,36 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                     ledOffStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
                     addLogEntry("LEDOFF", "FAIL");
                     pendingLEDOFF = false;
+                }
+                if (pendingCOMPASS) {
+                    const compassStatusElem = document.getElementById('compass-statuss');
+                    compassStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("COMPASS", "FAIL");
+                    pendingCOMPASS = false;
+                }
+                if (pendingSPEAKER) {
+                    const speakerStatusElem = document.getElementById('speaker-status');
+                    speakerStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("SPEAKER", "FAIL");
+                    pendingSPEAKER = false;
+                }
+                if (pendingBRIGHTNESSUP) {
+                    const brightnessUpStatusElem = document.getElementById('brightness-up-status');
+                    brightnessUpStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("BRIGHTNESSUP", "FAIL");
+                    pendingBRIGHTNESSUP = false;
+                }
+                if (pendingBRIGHTNESSDOWN) {
+                    const brightnessDownStatusElem = document.getElementById('brightness-down-status');
+                    brightnessDownStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("BRIGHTNESSDOWN", "FAIL");
+                    pendingBRIGHTNESSDOWN = false;
+                }
+                if (pendingBATTERY) {
+                    const batteryStatusElem = document.getElementById('battery-status');
+                    batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+                    addLogEntry("BATTERY", "FAIL");
+                    pendingBATTERY = false;
                 }
             }
             break;
@@ -270,7 +355,6 @@ function addLogEntry(testName, status) {
     logEntries.push(`[${timestamp}] ${currentDeviceName} - S/N: ${snValue} - ${testName}: ${status}`);
 }
 
-
 // LED ON / LED OFF 的按鈕事件處理
 ledButton.addEventListener('click', async () => {
     // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
@@ -290,26 +374,40 @@ ledOffButton.addEventListener('click', async () => {
     addLogEntry("LED OFF", "");
 });
 
-
 compassButton.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpCompass(message);
+    pendingCOMPASS = true;
+    compassButton.disabled = true;
+    compassButton.classList.add('disable');
+    await mcumgr.smpCompass();
+    addLogEntry("Compass", "");
 });
 speakerButton.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpSpeaker(message);
-});
-batteryButton.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpBattery(message);
+    pendingSPEAKER = true;
+    speakerButton.disabled = true;
+    speakerButton.classList.add('disable');
+    await mcumgr.smpSpeaker();
+    addLogEntry("Speaker", "");
 });
 brightnessButtonUp.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpBrightnessUp(message);
+    pendingBRIGHTNESSUP = true;
+    brightnessButtonUp.disabled = true;
+    brightnessButtonUp.classList.add('disable');
+    await mcumgr.smpBrightnessUp();
+    addLogEntry("BrightnessUp", "");
 });
-brightnessButtonuDown.addEventListener('click', async () => {
-    const message = prompt('LED off', 'LED off!');
-    await mcumgr.smpBrightnessDown(message);
+brightnessButtonDown.addEventListener('click', async () => {
+    pendingBRIGHTNESSDOWN  = true;
+    brightnessButtonDown.disabled = true;
+    brightnessButtonDown.classList.add('disable');
+    await mcumgr.smpBrightnessDown();
+    addLogEntry("BrightnessDown","");
+});
+batteryButton.addEventListener('click', async () => {
+    pendingBATTERY = true;
+    batteryButton.disabled = true;
+    batteryButton.classList.add('disable');
+    await mcumgr.smpBattery();
+    addLogEntry("Battery", "");
 });
 
 // 輸出 log 按鈕的事件處理
@@ -319,9 +417,15 @@ exportLogButton.addEventListener("click", function () {
     // 取得 LED ON 與 LED OFF 的狀態文字
     const ledOnStatus = document.getElementById("led-on-status").textContent.trim();
     const ledOffStatus = document.getElementById("led-off-status").textContent.trim();
+    const compassStatus = document.getElementById("compass-status").textContent.trim();
+    const speakerStatus = document.getElementById("speaker-status").textContent.trim();
+    const brightnessUpStatus = document.getElementById("brightness-up-status").textContent.trim();
+    const brightnessDownStatus = document.getElementById("brightness-down-status").textContent.trim();
+    const batteryStatus = document.getElementById("battery-status").textContent.trim();
+
     // 判斷整體測試結果：若兩項皆 PASS 則整體 PASS，否則 FAIL
     let overall = "PASS";
-    if (ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS") {
+    if (ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS" || compassStatus.toUpperCase() !== "PASS"|| speakerStatus.toUpperCase() !== "PASS"|| brightnessUpStatus.toUpperCase() !== "PASS"|| brightnessDownStatus.toUpperCase() !== "PASS"|| batteryStatus.toUpperCase() !== "PASS") {
         overall = "FAIL";
     }
     // 取得 S/N 與 BT MAC 輸入欄的值
@@ -332,8 +436,7 @@ exportLogButton.addEventListener("click", function () {
     const fileName = `ms5564${overall === "PASS" ? "P" : "F"}_${snValue}.xml`;
 
     // 產生 XML 格式內容，順序依序為 SN、LEDON、LEDOFF 與 BT_MAC
-    const xmlContent = `<TestInfo>
-    <TestItem Key="SN">${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem></TestInfo>`;
+    const xmlContent = `<TestInfo><TestItem Key="SN">ms${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem><TestItem Key="COMPASS">${compassStatus.toUpperCase()}</TestItem><TestItem Key="SPEAKER">${speakerStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSUP">${brightnessUpStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSDOWN">${brightnessDownStatus.toUpperCase()}</TestItem><TestItem Key="BATTERY">${batteryStatus.toUpperCase()}</TestItem></TestInfo>`;
 
     // 使用 Blob 產生 XML 檔案並觸發下載
     const blob = new Blob([xmlContent], { type: "application/xml" });
