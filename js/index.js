@@ -1,7 +1,7 @@
 // 儲存回應結果 ("Pass" 或 "Fail")
 let ledOnResult = null;  
 let ledOffResult = null;  
-let compassesult = null;  
+let compassResult = null;  
 let speakerResult = null;  
 let brightnessUpResult = null;  
 let brightnessDownResult = null;  
@@ -176,58 +176,58 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             console.log("Received response:", data.o);
                 // LED ON 回應處理
                 if (output === "LED turned on") {
-                    const ledOnStatusElem = document.getElementById('led-on-status');
-                    ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("LEDON", "PASS");
+                    // const ledOnStatusElem = document.getElementById('led-on-status');
+                    // ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("LEDON", "PASS");
                     ledOnResult = "Pass";
                     pendingLEDON = false;
                 }
                 // LED OFF 回應處理
                 else if (output === "LED turned off") {
+                    // const ledOffStatusElem = document.getElementById('led-off-status');
+                    // ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("LEDOFF", "PASS");
                     ledOffResult = "Pass";
-                    const ledOffStatusElem = document.getElementById('led-off-status');
-                    ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("LEDOFF", "PASS");
                     pendingLEDOFF = false;
                 }
                 // Compass 回應處理
                 else if (output === "get compass values") {
-                    const compassStatusElem = document.getElementById('compass-status');
-                    compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("COMPASS", "PASS");
+                    // const compassStatusElem = document.getElementById('compass-status');
+                    // compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("COMPASS", "PASS");
                     compassResult = "Pass";
                     pendingCOMPASS = false;
                 }
                 // Speaker 回應處理
                 else if (output === "Control speaker") {
+                    // const speakerStatusElem = document.getElementById('speaker-status');
+                    // speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("SPEAKER", "PASS");
                     speakerResult = "Pass";
-                    const speakerStatusElem = document.getElementById('speaker-status');
-                    speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("SPEAKER", "PASS");
                     pendingSPEAKER = false;
                 }
                 // Brightness Up 回應處理
                 else if (output === "Control brightness up") {
+                    // const brightnessUpStatusElem = document.getElementById('brightness-up-status');
+                    // brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("BRIGHTNESSUP", "PASS");
                     brightnessUpResult = "Pass";
-                    const brightnessUpStatusElem = document.getElementById('brightness-up-status');
-                    brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("BRIGHTNESSUP", "PASS");
                     pendingBRIGHTNESSUP = false;
                 }
                 // Brightness Down 回應處理
                 else if (output === "Control brightness down") {
+                    // const brightnessDownStatusElem = document.getElementById('brightness-down-status');
+                    // brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("BRIGHTNESSDOWN", "PASS");
                     brightnessDownResult = "Pass";
-                    const brightnessDownStatusElem = document.getElementById('brightness-down-status');
-                    brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("BRIGHTNESSDOWN", "PASS");
                     pendingBRIGHTNESSDOWN = false;
                 }
                 // Battery 回應處理
                 else if (output === "get battery voltage") {
+                    // const batteryStatusElem = document.getElementById('battery-status');
+                    // batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    // addLogEntry("BATTERY", "PASS");
                     batteryResult = "Pass";
-                    const batteryStatusElem = document.getElementById('battery-status');
-                    batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                    addLogEntry("BATTERY", "PASS");
                     pendingBATTERY = false;
                 }
                 // 不做 catch-all，讓各自超時機制處理失敗
@@ -366,7 +366,7 @@ ledButton.addEventListener('click', async () => {
     ledOnStatusElem.appendChild(progressBarContainer);
     
     // 動畫設定：3000 毫秒內從 0% 到 100%
-    const duration = 2000;  // 毫秒
+    const duration = 1000;  // 毫秒
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -430,7 +430,7 @@ ledOffButton.addEventListener('click', async () => {
     ledOffStatusElem.appendChild(progressBarContainer);
     
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 2000;
+    const duration = 1000;
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -499,7 +499,7 @@ compassButton.addEventListener('click', async () => {
     compassStatusElem.appendChild(progressBarContainer);
     
     // 動畫設定：3000 毫秒內從 0% 到 100%
-    const duration = 2000;  // 毫秒
+    const duration = 1000;  // 毫秒
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -560,7 +560,7 @@ speakerButton.addEventListener('click', async () => {
     speakerStatusElem.appendChild(progressBarContainer);
     
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 2000;
+    const duration = 1000;
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -623,7 +623,7 @@ brightnessButtonUp.addEventListener('click', async () => {
     brightnessUpStatusElem.appendChild(progressBarContainer);
     
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 2000;
+    const duration = 1000;
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -686,7 +686,7 @@ brightnessButtonDown.addEventListener('click', async () => {
     brightnessDownStatusElem.appendChild(progressBarContainer);
     
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 2000;
+    const duration = 1000;
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
@@ -749,7 +749,7 @@ batteryButton.addEventListener('click', async () => {
     batteryStatusElem.appendChild(progressBarContainer);
     
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 2000;
+    const duration = 1000;
     const intervalTime = 100;
     let elapsed = 0;
     const progressInterval = setInterval(() => {
