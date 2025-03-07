@@ -1,3 +1,24 @@
+// 儲存回應結果 ("Pass" 或 "Fail")
+let ledOnResult = null;  
+let ledOffResult = null;  
+let compassesult = null;  
+let speakerResult = null;  
+let brightnessUpResult = null;  
+let brightnessDownResult = null;  
+let batteryResult = null;  
+
+// 新增全域變數，記錄按鈕是否等待回應
+let pendingLEDON = false;
+let pendingLEDOFF = false;
+let pendingCOMPASS = false;
+let pendingSPEAKER = false;
+let pendingBRIGHTNESSUP = false;
+let pendingBRIGHTNESSDOWN = false;
+let pendingBATTERY = false;
+
+// 全域用來儲存 log 記錄的陣列
+let logEntries = [];
+
 const screens = {
     initial: document.getElementById('initial-screen'),
     connecting: document.getElementById('connecting-screen'),
@@ -63,7 +84,7 @@ mcumgr.onConnecting(() => {
 mcumgr.onConnect(() => {
     // 更新畫面上顯示的裝置名稱
     deviceName.innerText = mcumgr.name;
-    document.getElementById("bluetooth-is-available-message").innerText = "Connect Success";
+    // document.getElementById("bluetooth-is-available-message").innerText = "Connect Success";
     screens.connecting.style.display = 'none';
     screens.initial.style.display = 'none';
     screens.connected.style.display = 'block';
@@ -76,6 +97,7 @@ mcumgr.onConnect(() => {
     // 重置 LED 按鈕：移除 disabled 屬性和 class
     ledButton.disabled = false;
     ledButton.classList.remove('disabled');
+
     ledOffButton.disabled = false;
     ledOffButton.classList.remove('disabled');
 
@@ -83,16 +105,16 @@ mcumgr.onConnect(() => {
     compassButton.classList.remove('disabled');
 
     speakerButton.disabled = false;
-    speakerButton.classList.remove('disable');
+    speakerButton.classList.remove('disabled');
 
     brightnessButtonUp.disabled = false;
-    brightnessButtonUp.classList.remove('disable');;
+    brightnessButtonUp.classList.remove('disabled');;
     
     brightnessButtonDown.disabled = false;
-    brightnessButtonDown.classList.remove('disable');
+    brightnessButtonDown.classList.remove('disabled');
     
     batteryButton.disabled = false;
-    batteryButton.classList.remove('disable');
+    batteryButton.classList.remove('disabled');
 
     // 在 onConnect 回呼中重置 LED 狀態
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -151,100 +173,64 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
         case MGMT_GROUP_ID_SHELL:
             // alert(data.o);
             const output = data.o.trim();
-            // LED ON 回應處理
-            if (output === "LED turned on") {
-                const ledOnStatusElem = document.getElementById('led-on-status');
-                ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("LEDON", "PASS");
-                pendingLEDON = false;
-            }
-            // LED OFF 回應處理
-            else if (output === "LED turned off") {
-                const ledOffStatusElem = document.getElementById('led-off-status');
-                ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("LEDOFF", "PASS");
-                pendingLEDOFF = false;
-            }
-            // Compass 回應處理
-            else if (output === "get compass values") {
-                const compassStatusElem = document.getElementById('compass-statuss');
-                compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("COMPASS", "PASS");
-                pendingCOMPASS = false;
-            }
-            // Speaker 回應處理
-            else if (output === "Control speaker") {
-                const speakerStatusElem = document.getElementById('speaker-status');
-                speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("SPEAKER", "PASS");
-                pendingSPEAKER = false;
-            }
-            // brightness up 回應處理
-            else if (output === "Control bightness up") {
-                const brightnessUpStatusElem = document.getElementById('brightness-up-status');
-                brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("BRIGHTNESSUP", "PASS");
-                pendingBRIGHTNESSUP = false;
-            }
-            // brightness down 回應處理
-            else if (output === "Control bightness down") {
-                const brightnessDownStatusElem = document.getElementById('brightness-down-status');
-                brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("BRIGHTNESSDOWN", "PASS");
-                pendingBRIGHTNESSDOWN = false;
-            }
-            // battery 回應處理
-            else if (output === "get battery voltage") {
-                const batteryStatusElem = document.getElementById('battery-status');
-                batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                addLogEntry("BATTERY", "PASS");
-                pendingBATTERY = false;
-            }
-            // 若回傳內容不符合預期，依 pending 狀態分別更新
-            else {
-                if (pendingLEDON) {
+            console.log("Received response:", data.o);
+                // LED ON 回應處理
+                if (output === "LED turned on") {
                     const ledOnStatusElem = document.getElementById('led-on-status');
-                    ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("LEDON", "FAIL");
+                    ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("LEDON", "PASS");
+                    ledOnResult = "Pass";
                     pendingLEDON = false;
                 }
-                if (pendingLEDOFF) {
+                // LED OFF 回應處理
+                else if (output === "LED turned off") {
+                    ledOffResult = "Pass";
                     const ledOffStatusElem = document.getElementById('led-off-status');
-                    ledOffStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("LEDOFF", "FAIL");
+                    ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("LEDOFF", "PASS");
                     pendingLEDOFF = false;
                 }
-                if (pendingCOMPASS) {
-                    const compassStatusElem = document.getElementById('compass-statuss');
-                    compassStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("COMPASS", "FAIL");
+                // Compass 回應處理
+                else if (output === "get compass values") {
+                    const compassStatusElem = document.getElementById('compass-status');
+                    compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("COMPASS", "PASS");
+                    compassResult = "Pass";
                     pendingCOMPASS = false;
                 }
-                if (pendingSPEAKER) {
+                // Speaker 回應處理
+                else if (output === "Control speaker") {
+                    speakerResult = "Pass";
                     const speakerStatusElem = document.getElementById('speaker-status');
-                    speakerStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("SPEAKER", "FAIL");
+                    speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("SPEAKER", "PASS");
                     pendingSPEAKER = false;
                 }
-                if (pendingBRIGHTNESSUP) {
+                // Brightness Up 回應處理
+                else if (output === "Control brightness up") {
+                    brightnessUpResult = "Pass";
                     const brightnessUpStatusElem = document.getElementById('brightness-up-status');
-                    brightnessUpStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("BRIGHTNESSUP", "FAIL");
+                    brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("BRIGHTNESSUP", "PASS");
                     pendingBRIGHTNESSUP = false;
                 }
-                if (pendingBRIGHTNESSDOWN) {
+                // Brightness Down 回應處理
+                else if (output === "Control brightness down") {
+                    brightnessDownResult = "Pass";
                     const brightnessDownStatusElem = document.getElementById('brightness-down-status');
-                    brightnessDownStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("BRIGHTNESSDOWN", "FAIL");
+                    brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("BRIGHTNESSDOWN", "PASS");
                     pendingBRIGHTNESSDOWN = false;
                 }
-                if (pendingBATTERY) {
+                // Battery 回應處理
+                else if (output === "get battery voltage") {
+                    batteryResult = "Pass";
                     const batteryStatusElem = document.getElementById('battery-status');
-                    batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-                    addLogEntry("BATTERY", "FAIL");
+                    batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+                    addLogEntry("BATTERY", "PASS");
                     pendingBATTERY = false;
                 }
-            }
+                // 不做 catch-all，讓各自超時機制處理失敗
             break;
         case MGMT_GROUP_ID_IMAGE:
             switch (id) {
@@ -339,13 +325,6 @@ echoButton.addEventListener('click', async () => {
 
 // 修改test button
 
-// 新增全域變數，記錄 LED 按鈕是否等待回應
-let pendingLEDON = false;
-let pendingLEDOFF = false;
-
-// 全域用來儲存 log 記錄的陣列
-let logEntries = [];
-
 // 工具函式：加入一筆 log 記錄（包含時間戳、device name 與 S/N）
 function addLogEntry(testName, status) {
     const timestamp = new Date().toLocaleString();
@@ -355,59 +334,454 @@ function addLogEntry(testName, status) {
     logEntries.push(`[${timestamp}] ${currentDeviceName} - S/N: ${snValue} - ${testName}: ${status}`);
 }
 
-// LED ON / LED OFF 的按鈕事件處理
+// 按鈕事件處理
 ledButton.addEventListener('click', async () => {
     // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
     pendingLEDON = true;
+    ledOnResult = null;  //add result
     ledButton.disabled = true;
     ledButton.classList.add('disabled');
+
+    // 取得 LED ON 狀態區域（原本顯示 "N/A"）
+    const ledOnStatusElem = document.getElementById('led-on-status');
+    // 清空原有內容
+    ledOnStatusElem.innerHTML = '';
+    
+    // 建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 LED ON 狀態區域
+    ledOnStatusElem.appendChild(progressBarContainer);
+    
+    // 動畫設定：3000 毫秒內從 0% 到 100%
+    const duration = 2000;  // 毫秒
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
+
     await mcumgr.smpLed();
+    console.log("LED ON button click", pendingLEDON)
     // 可選擇在發送命令時先加入記錄，例如暫時標記為等待回應
     addLogEntry("LED ON", "");
+    // 等待進度條結束後再更新狀態 (3000ms 後)
+    setTimeout(() => {
+        // 如果尚未收到回應，預設記為 Fail
+        if (pendingLEDON && !ledOnResult) {
+            ledOnResult = "Fail";
+            addLogEntry("COMPASS", "FAIL");
+            pendingLEDON = false;
+        }
+        // 更新 LED ON 狀態顯示，移除進度條並顯示結果
+        if (ledOnResult === "Pass") {
+            ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+   }, duration);
+    
 });
 
 ledOffButton.addEventListener('click', async () => {
     pendingLEDOFF = true;
+    ledOffResult = null;  //add result
     ledOffButton.disabled = true;
     ledOffButton.classList.add('disabled');
+
+    // 取得 LED OFF 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const ledOffStatusElem = document.getElementById('led-off-status');
+    ledOffStatusElem.innerHTML = '';
+    
+    // 動態建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條，增加 striped 與 animated 樣式
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 LED ON 狀態區
+    ledOffStatusElem.appendChild(progressBarContainer);
+    
+    // 設定進度條動畫，duration 為 3000 毫秒
+    const duration = 2000;
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
+
     await mcumgr.smpLedoff();
+    console.log("LED OFF button click", pendingLEDOFF)
+
     addLogEntry("LED OFF", "");
+    // 若 3 秒內仍未收到回應，則自動更新為 FAIL
+    // 等待 duration 毫秒後再更新 UI
+    setTimeout(() => {
+        // 如果在超時前尚未收到回應，則設定為 Fail
+        if (pendingLEDOFF && !ledOffResult) {
+            ledOffResult = "Fail";
+            addLogEntry("LEDOFF", "FAIL");
+            pendingLEDOFF = false;
+        }
+        // 更新 LED ON 狀態顯示
+        if (ledOffResult === "Pass") {
+            ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            ledOffStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+        // 移除進度條
+        if (progressBarContainer && progressBarContainer.parentNode) {
+            progressBarContainer.parentNode.removeChild(progressBarContainer);
+        }
+   }, duration);
 });
 
 compassButton.addEventListener('click', async () => {
     pendingCOMPASS = true;
+    compassResult = null;  //add result
     compassButton.disabled = true;
-    compassButton.classList.add('disable');
+    compassButton.classList.add('disabled');
+
+    // 取得 Compass 狀態區域（原本顯示 "N/A"）
+    const compassStatusElem = document.getElementById('compass-status');
+    // 清空原有內容
+    compassStatusElem.innerHTML = '';
+    
+    // 建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 Compass 狀態區域
+    compassStatusElem.appendChild(progressBarContainer);
+    
+    // 動畫設定：3000 毫秒內從 0% 到 100%
+    const duration = 2000;  // 毫秒
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
     await mcumgr.smpCompass();
     addLogEntry("Compass", "");
+
+    // 等待進度條結束後再更新狀態 (3000ms 後)
+    setTimeout(() => {
+        // 如果尚未收到回應，預設記為 Fail
+        if (pendingCOMPASS && !compassResult) {
+            compassResult = "Fail";
+            addLogEntry("COMPASS", "FAIL");
+            pendingCOMPASS = false;
+        }
+        // 更新 Compass 狀態顯示，移除進度條並顯示結果
+        if (compassResult === "Pass") {
+            compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            compassStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+   }, duration);
+
 });
 speakerButton.addEventListener('click', async () => {
     pendingSPEAKER = true;
+    speakerResult = null;
     speakerButton.disabled = true;
-    speakerButton.classList.add('disable');
+    speakerButton.classList.add('disabled');
+
+    // 取得 speaker 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const speakerStatusElem = document.getElementById('speaker-status');
+    speakerStatusElem.innerHTML = '';
+    
+    // 動態建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條，增加 striped 與 animated 樣式
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 speaker 狀態區
+    speakerStatusElem.appendChild(progressBarContainer);
+    
+    // 設定進度條動畫，duration 為 3000 毫秒
+    const duration = 2000;
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
     await mcumgr.smpSpeaker();
     addLogEntry("Speaker", "");
+    // 等待 duration 毫秒後再更新 UI
+    setTimeout(() => {
+        // 如果在超時前尚未收到回應，則設定為 Fail
+        if (pendingSPEAKER && !speakerResult) {
+            speakerResult = "Fail";
+            addLogEntry("SPEAKER", "FAIL");
+            pendingSPEAKER = false;
+        }
+        // 更新 speaker 狀態顯示
+        if (speakerResult === "Pass") {
+            speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            speakerStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+        // 移除進度條
+        if (progressBarContainer && progressBarContainer.parentNode) {
+            progressBarContainer.parentNode.removeChild(progressBarContainer);
+        }
+   }, duration);
 });
 brightnessButtonUp.addEventListener('click', async () => {
     pendingBRIGHTNESSUP = true;
+    brightnessUpResult = null; 
     brightnessButtonUp.disabled = true;
-    brightnessButtonUp.classList.add('disable');
+    brightnessButtonUp.classList.add('disabled');
+    
+    // 取得 brightness up 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const brightnessUpStatusElem = document.getElementById('brightness-up-status');
+    brightnessUpStatusElem.innerHTML = '';
+    
+    // 動態建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條，增加 striped 與 animated 樣式
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 brightness up 狀態區
+    brightnessUpStatusElem.appendChild(progressBarContainer);
+    
+    // 設定進度條動畫，duration 為 3000 毫秒
+    const duration = 2000;
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
     await mcumgr.smpBrightnessUp();
     addLogEntry("BrightnessUp", "");
+    // 等待 duration 毫秒後再更新 UI
+    setTimeout(() => {
+        // 如果在超時前尚未收到回應，則設定為 Fail
+        if (pendingBRIGHTNESSUP && !brightnessUpResult) {
+            brightnessUpResult = "Fail";
+            addLogEntry("BRIGHTNESSUP", "FAIL");
+            pendingBRIGHTNESSUP = false;
+        }
+        // 更新 Brightness up 狀態顯示
+        if (brightnessUpResult === "Pass") {
+            brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            brightnessUpStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+        // 移除進度條
+        if (progressBarContainer && progressBarContainer.parentNode) {
+            progressBarContainer.parentNode.removeChild(progressBarContainer);
+        }
+   }, duration);
 });
 brightnessButtonDown.addEventListener('click', async () => {
     pendingBRIGHTNESSDOWN  = true;
+    brightnessDownResult = null;
     brightnessButtonDown.disabled = true;
-    brightnessButtonDown.classList.add('disable');
+    brightnessButtonDown.classList.add('disabled');
+
+    // 取得 brightness down 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const brightnessDownStatusElem = document.getElementById('brightness-down-status');
+    brightnessDownStatusElem.innerHTML = '';
+    
+    // 動態建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條，增加 striped 與 animated 樣式
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 brightness down 狀態區
+    brightnessDownStatusElem.appendChild(progressBarContainer);
+    
+    // 設定進度條動畫，duration 為 3000 毫秒
+    const duration = 2000;
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
     await mcumgr.smpBrightnessDown();
     addLogEntry("BrightnessDown","");
+    // 等待 duration 毫秒後再更新 UI
+    setTimeout(() => {
+        // 如果在超時前尚未收到回應，則設定為 Fail
+        if (pendingBRIGHTNESSDOWN && !brightnessDownResult) {
+            brightnessDownResult = "Fail";
+            addLogEntry("BRIGHTNESSDOWN", "FAIL");
+            pendingBRIGHTNESSDOWN = false;
+        }
+        // 更新 brightness down 狀態顯示
+        if (brightnessDownResult === "Pass") {
+            brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            brightnessDownStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+        // 移除進度條
+        if (progressBarContainer && progressBarContainer.parentNode) {
+            progressBarContainer.parentNode.removeChild(progressBarContainer);
+        }
+   }, duration);
 });
 batteryButton.addEventListener('click', async () => {
     pendingBATTERY = true;
+    batteryResult = null;
     batteryButton.disabled = true;
-    batteryButton.classList.add('disable');
+    batteryButton.classList.add('disabled');
+
+    // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const batteryStatusElem = document.getElementById('battery-status');
+    batteryStatusElem.innerHTML = '';
+    
+    // 動態建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
+    const progressBarContainer = document.createElement('div');
+    progressBarContainer.className = 'progress mt-2';
+    progressBarContainer.style.height = '20px';
+    
+    // 建立進度條，增加 striped 與 animated 樣式
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+    progressBar.role = 'progressbar';
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', '0');
+    progressBar.setAttribute('aria-valuemin', '0');
+    progressBar.setAttribute('aria-valuemax', '100');
+    progressBarContainer.appendChild(progressBar);
+    
+    // 插入進度條到 battery 狀態區
+    batteryStatusElem.appendChild(progressBarContainer);
+    
+    // 設定進度條動畫，duration 為 3000 毫秒
+    const duration = 2000;
+    const intervalTime = 100;
+    let elapsed = 0;
+    const progressInterval = setInterval(() => {
+         elapsed += intervalTime;
+         const percent = Math.min((elapsed / duration) * 100, 100);
+         progressBar.style.width = percent + '%';
+         progressBar.setAttribute('aria-valuenow', percent);
+         if (elapsed >= duration) {
+             clearInterval(progressInterval);
+         }
+    }, intervalTime);
     await mcumgr.smpBattery();
     addLogEntry("Battery", "");
+    // 等待 duration 毫秒後再更新 UI
+    setTimeout(() => {
+        // 如果在超時前尚未收到回應，則設定為 Fail
+        if (pendingBATTERY && !batteryResult) {
+            batteryResult = "Fail";
+            addLogEntry("LEDON", "FAIL");
+            pendingBATTERY = false;
+        }
+        // 更新 battery 狀態顯示
+        if (batteryResult === "Pass") {
+            batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+        } else {
+            batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+        }
+        // 移除進度條
+        if (progressBarContainer && progressBarContainer.parentNode) {
+            progressBarContainer.parentNode.removeChild(progressBarContainer);
+        }
+   }, duration);
 });
 
 // 輸出 log 按鈕的事件處理
