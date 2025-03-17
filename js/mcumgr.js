@@ -35,10 +35,13 @@ const IMG_MGMT_ID_ERASE = 5;
 
 class MCUManager {
     constructor(di = {}) {
+        // Zephyr UUID
         this.SERVICE_UUID = '8d53dc1d-1db7-4cd3-868b-8a527460aa84';
         this.CHARACTERISTIC_UUID = 'da2e7828-fbce-4e01-ae9e-261174997c48';
+        // MS-55XXX
         // this.SERVICE_UUID = '9eee0100-b5c6-4a92-bec8-d2555e86a221';
         // this.CHARACTERISTIC_UUID = '9eee0101-b5c6-4a92-bec8-d2555e86a221';
+
 
         this._mtu = 400;
         this._device = null;
