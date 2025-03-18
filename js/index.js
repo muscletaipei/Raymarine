@@ -123,6 +123,20 @@ mcumgr.onConnect(() => {
     batteryButton.classList.remove('disabled');
 
     // 在 onConnect 回呼中重置 LED 狀態
+    document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw7-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw8-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw9-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw10-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw11-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw12-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -146,6 +160,20 @@ mcumgr.onDisconnect(() => {
     
     
     // 清空 test item 狀態與 log
+    document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw7-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw8-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw9-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw10-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw11-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw12-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -231,13 +259,29 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingBRIGHTNESSDOWN = false;
             }
             // Battery 回應處理
-            else if (output === "get battery voltage") {
-                // const batteryStatusElem = document.getElementById('battery-status');
-                // batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                // addLogEntry("BATTERY", "PASS");
-                batteryResult = "Pass";
+            // else if (output === "get battery voltage") {
+            //     // const batteryStatusElem = document.getElementById('battery-status');
+            //     // batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+            //     // addLogEntry("BATTERY", "PASS");
+            //     batteryResult = "Pass";
+            //     pendingBATTERY = false;
+            // }
+            else if (pendingBATTERY && !isNaN(output)) {
+                // 解析
+                let voltage = parseInt(output);
+                // 將頁面上battery-status只顯示數值
+                document.getElementById('batterystaus').innerText= voltage;
+
+                // 判斷Pass/fail
+                if (voltage >= 2300 && voltage <= 2800){
+                    batteryResult = "Pass";
+                } else{
+                    batteryResult = "Fail";
+                }
                 pendingBATTERY = false;
             }
+
+
             // 不做 catch-all，讓各自超時機制處理失敗
             break;
         case MGMT_GROUP_ID_IMAGE:
@@ -343,6 +387,543 @@ function addLogEntry(testName, status) {
 }
 
 // 按鈕事件處理
+// 取得 SW1 按鈕與狀態顯示區
+// 1. 限制 SW1 兩個勾選框只能選一個
+document.querySelectorAll('.sw1-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+            // 當某一個被選中，將其他同組勾選框取消選取
+            document.querySelectorAll('.sw1-checkbox').forEach(function(other) {
+                if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+  // 2. 提交 SW1 測試結果
+document.getElementById('sw1-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw1-pass');
+    const failChk = document.getElementById('sw1-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw1StatusElem = document.getElementById('sw1-status');
+    if (result === "Pass") {
+        sw1StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw1StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW1", result);
+    });
+
+// 取得 SW2/3 按鈕與狀態顯示區
+// 1. 限制 SW2 兩個勾選框只能選一個
+document.querySelectorAll('.sw2-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw2-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW2/3 測試結果
+document.getElementById('sw2-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw2-pass');
+    const failChk = document.getElementById('sw2-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw2StatusElem = document.getElementById('sw2-status');
+    if (result === "Pass") {
+        sw2StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw2StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW2", result);
+    });
+
+// 取得 SW4 按鈕與狀態顯示區
+// 1. 限制 SW4 兩個勾選框只能選一個
+document.querySelectorAll('.sw4-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw4-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+  // 2. 提交 SW4 測試結果
+document.getElementById('sw4-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw4-pass');
+    const failChk = document.getElementById('sw4-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw4StatusElem = document.getElementById('sw4-status');
+    if (result === "Pass") {
+        sw4StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw4StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW4", result);
+    });
+
+// 取得 SW5 按鈕與狀態顯示區
+// 1. 限制 SW5 兩個勾選框只能選一個
+document.querySelectorAll('.sw5-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw5-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW5 測試結果
+document.getElementById('sw5-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw5-pass');
+    const failChk = document.getElementById('sw5-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw5StatusElem = document.getElementById('sw5-status');
+    if (result === "Pass") {
+        sw5StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw5StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW5", result);
+    });
+// 取得 SW6 按鈕與狀態顯示區
+// 1. 限制 SW6 兩個勾選框只能選一個
+document.querySelectorAll('.sw6-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw6-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW6 測試結果
+document.getElementById('sw6-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw6-pass');
+    const failChk = document.getElementById('sw6-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw6StatusElem = document.getElementById('sw6-status');
+    if (result === "Pass") {
+        sw6StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw6StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW6", result);
+    });
+// 取得 SW7 按鈕與狀態顯示區
+// 1. 限制 SW7 兩個勾選框只能選一個
+document.querySelectorAll('.sw7-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw7-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW7 測試結果
+document.getElementById('sw7-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw7-pass');
+    const failChk = document.getElementById('sw7-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw7StatusElem = document.getElementById('sw7-status');
+    if (result === "Pass") {
+        sw7StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw7StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW7", result);
+    });
+// 取得 SW8 按鈕與狀態顯示區
+// 1. 限制 SW8 兩個勾選框只能選一個
+document.querySelectorAll('.sw8-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw8-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW8 測試結果
+document.getElementById('sw8-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw8-pass');
+    const failChk = document.getElementById('sw8-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw8StatusElem = document.getElementById('sw8-status');
+    if (result === "Pass") {
+        sw8StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw8StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW8", result);
+    });
+// 取得 SW9 按鈕與狀態顯示區
+// 1. 限制 SW9 兩個勾選框只能選一個
+document.querySelectorAll('.sw9-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw9-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW9 測試結果
+document.getElementById('sw9-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw9-pass');
+    const failChk = document.getElementById('sw9-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw9StatusElem = document.getElementById('sw9-status');
+    if (result === "Pass") {
+        sw9StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw9StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW9", result);
+    });
+// 取得 SW10 按鈕與狀態顯示區
+// 1. 限制 SW10 兩個勾選框只能選一個
+document.querySelectorAll('.sw10-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw10-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW10 測試結果
+document.getElementById('sw10-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw10-pass');
+    const failChk = document.getElementById('sw10-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw10StatusElem = document.getElementById('sw10-status');
+    if (result === "Pass") {
+        sw10StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw10StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW10", result);
+    });
+// 取得 SW11 按鈕與狀態顯示區
+// 1. 限制 SW11 兩個勾選框只能選一個
+document.querySelectorAll('.sw11-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw11-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW11 測試結果
+document.getElementById('sw11-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw11-pass');
+    const failChk = document.getElementById('sw11-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw11StatusElem = document.getElementById('sw11-status');
+    if (result === "Pass") {
+        sw11StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw11StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW11", result);
+    });
+// 取得 SW12 按鈕與狀態顯示區
+// 1. 限制 SW12 兩個勾選框只能選一個
+document.querySelectorAll('.sw12-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw12-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW12 測試結果
+document.getElementById('sw12-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw12-pass');
+    const failChk = document.getElementById('sw12-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw12StatusElem = document.getElementById('sw12-status');
+    if (result === "Pass") {
+        sw12StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw12StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW12", result);
+    });
+// 取得 SW13 按鈕與狀態顯示區
+// 1. 限制 SW13 兩個勾選框只能選一個
+document.querySelectorAll('.sw13-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw13-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW13 測試結果
+document.getElementById('sw13-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw13-pass');
+    const failChk = document.getElementById('sw13-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw13StatusElem = document.getElementById('sw13-status');
+    if (result === "Pass") {
+        sw13StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw13StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW13", result);
+    });
+// 取得 SW14 按鈕與狀態顯示區
+// 1. 限制 SW14 兩個勾選框只能選一個
+document.querySelectorAll('.sw14-checkbox').forEach(function(chk) {
+    chk.addEventListener('change', function() {
+        if (this.checked) {
+        // 當某一個被選中，將其他同組勾選框取消選取
+        document.querySelectorAll('.sw14-checkbox').forEach(function(other) {
+            if (other !== chk) {
+            other.checked = false;
+            }
+        });
+        }
+    });
+    });
+// 2. 提交 SW14 測試結果
+document.getElementById('sw14-submit').addEventListener('click', function() {
+    // 讀取兩個勾選框的狀態
+    const passChk = document.getElementById('sw14-pass');
+    const failChk = document.getElementById('sw14-fail');
+    let result = "";
+    
+    if (passChk.checked && !failChk.checked) {
+        result = "Pass";
+    } else if (failChk.checked && !passChk.checked) {
+        result = "Fail";
+    } else {
+        alert("請勾選 Pass 或 Fail (只選一個)！");
+        return;
+    }
+    
+    // 根據結果更新 badge 顯示
+    const sw14StatusElem = document.getElementById('sw14-status');
+    if (result === "Pass") {
+        sw14StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+    } else {
+        sw14StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+    }
+    
+    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+    addLogEntry("SW14", result);
+    });
+
 ledButton.addEventListener('click', async () => {
     // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
     pendingLEDON = true;
@@ -673,45 +1254,45 @@ batteryButton.addEventListener('click', async () => {
     batteryButton.disabled = true;
     batteryButton.classList.add('disabled');
 
-    // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
-    const batteryStatusElem = document.getElementById('battery-status');
-    batteryStatusElem.innerHTML = '';
+    // // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
+    // const batteryStatusElem = document.getElementById('battery-status');
+    // batteryStatusElem.innerHTML = '';
 
-    // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
+    // // 建立 spinner 元素
+    // const spinner = document.createElement('div');
+    // spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
+    // spinner.setAttribute('role', 'status');
+    // spinner.innerHTML = '<span class="sr-only">Loading...</span>';
 
-    // 插入 spinner 到 LED ON 狀態區域
-    batteryStatusElem.appendChild(spinner);
+    // // 插入 spinner 到 LED ON 狀態區域
+    // batteryStatusElem.appendChild(spinner);
 
     // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 1000;
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
-    await mcumgr.smpBattery();
-    addLogEntry("Battery", "");
-    // 等待 duration 毫秒後再更新 UI
-    setTimeout(() => {
-        // 移除 spinner
-        batteryStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (batteryResult === "Pass") {
-            batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+//     const duration = 1000;
+//     const intervalTime = 100;
+//     let elapsed = 0;
+//     const progressInterval = setInterval(() => {
+//         elapsed += intervalTime;
+//         const percent = Math.min((elapsed / duration) * 100, 100);
+//         progressBar.style.width = percent + '%';
+//         progressBar.setAttribute('aria-valuenow', percent);
+//         if (elapsed >= duration) {
+//             clearInterval(progressInterval);
+//         }
+//     }, intervalTime);
+//     await mcumgr.smpBattery();
+//     addLogEntry("Battery", "");
+//     // 等待 duration 毫秒後再更新 UI
+//     setTimeout(() => {
+//         // 移除 spinner
+//         batteryStatusElem.removeChild(spinner);
+//         // 根據結果顯示狀態標籤
+//         if (batteryResult === "Pass") {
+//             batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+//         } else {
+//             batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+//         }
+//     }, duration);
 });
 
 // 輸出 log 按鈕的事件處理
@@ -719,6 +1300,22 @@ const exportLogButton = document.getElementById("export-log");
 // 輸出 XML Log 按鈕事件處理
 exportLogButton.addEventListener("click", function () {
     // 取得 LED ON 與 LED OFF 的狀態文字
+    const sw1Status = document.getElementById("sw1-status").textContent.trim();
+    const sw2Status = document.getElementById("sw2-status").textContent.trim();
+    const sw3Status = document.getElementById("sw2-status").textContent.trim();
+    const sw4Status = document.getElementById("sw4-status").textContent.trim();
+    const sw5Status = document.getElementById("sw5-status").textContent.trim();
+    const sw6Status = document.getElementById("sw6-status").textContent.trim();
+    const sw7Status = document.getElementById("sw7-status").textContent.trim();
+    const sw8Status = document.getElementById("sw8-status").textContent.trim();
+    const sw9Status = document.getElementById("sw9-status").textContent.trim();
+    const sw10Status = document.getElementById("sw10-status").textContent.trim();
+    const sw11Status = document.getElementById("sw11-status").textContent.trim();
+    const sw12Status = document.getElementById("sw12-status").textContent.trim();
+    const sw13Status = document.getElementById("sw13-status").textContent.trim();
+    const sw14Status = document.getElementById("sw14-status").textContent.trim();
+
+
     const ledOnStatus = document.getElementById("led-on-status").textContent.trim();
     const ledOffStatus = document.getElementById("led-off-status").textContent.trim();
     const compassStatus = document.getElementById("compass-status").textContent.trim();
@@ -729,7 +1326,7 @@ exportLogButton.addEventListener("click", function () {
 
     // 判斷整體測試結果：若兩項皆 PASS 則整體 PASS，否則 FAIL
     let overall = "PASS";
-    if (ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS" || compassStatus.toUpperCase() !== "PASS" || speakerStatus.toUpperCase() !== "PASS" || brightnessUpStatus.toUpperCase() !== "PASS" || brightnessDownStatus.toUpperCase() !== "PASS" || batteryStatus.toUpperCase() !== "PASS") {
+    if (sw14Status.toUpperCase() !== "PASS" ||sw13Status.toUpperCase() !== "PASS" ||sw12Status.toUpperCase() !== "PASS" ||sw11Status.toUpperCase() !== "PASS" ||sw10Status.toUpperCase() !== "PASS" ||sw9Status.toUpperCase() !== "PASS" ||sw8Status.toUpperCase() !== "PASS" ||sw7Status.toUpperCase() !== "PASS" ||sw6Status.toUpperCase() !== "PASS" ||sw5Status.toUpperCase() !== "PASS" ||sw4Status.toUpperCase() !== "PASS" || sw3Status.toUpperCase() !== "PASS" || sw2Status.toUpperCase() !== "PASS" ||sw1Status.toUpperCase() !== "PASS" || ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS" || compassStatus.toUpperCase() !== "PASS" || speakerStatus.toUpperCase() !== "PASS" || brightnessUpStatus.toUpperCase() !== "PASS" || brightnessDownStatus.toUpperCase() !== "PASS" || batteryStatus.toUpperCase() !== "PASS") {
         overall = "FAIL";
     }
     // 取得 S/N 與 BT MAC 輸入欄的值
@@ -740,7 +1337,7 @@ exportLogButton.addEventListener("click", function () {
     const fileName = `ms5564${overall === "PASS" ? "P" : "F"}_${snValue}.xml`;
 
     // 產生 XML 格式內容，順序依序為 SN、LEDON、LEDOFF 與 BT_MAC
-    const xmlContent = `<TestInfo><TestItem Key="SN">ms${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem><TestItem Key="COMPASS">${compassStatus.toUpperCase()}</TestItem><TestItem Key="SPEAKER">${speakerStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSUP">${brightnessUpStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSDOWN">${brightnessDownStatus.toUpperCase()}</TestItem><TestItem Key="BATTERY">${batteryStatus.toUpperCase()}</TestItem></TestInfo>`;
+    const xmlContent = `<TestInfo><TestItem Key="SN">ms${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="SW1">${sw1Status.toUpperCase()}</TestItem><TestItem Key="SW2">${sw2Status.toUpperCase()}</TestItem><TestItem Key="SW3">${sw3Status.toUpperCase()}</TestItem><TestItem Key="SW4">${sw4Status.toUpperCase()}</TestItem><TestItem Key="SW5">${sw5Status.toUpperCase()}</TestItem><TestItem Key="SW6">${sw6Status.toUpperCase()}</TestItem><TestItem Key="SW7">${sw7Status.toUpperCase()}</TestItem><TestItem Key="SW8">${sw8Status.toUpperCase()}</TestItem><TestItem Key="SW9">${sw9Status.toUpperCase()}</TestItem><TestItem Key="SW10">${sw10Status.toUpperCase()}</TestItem><TestItem Key="SW11">${sw11Status.toUpperCase()}</TestItem><TestItem Key="SW12">${sw12Status.toUpperCase()}</TestItem><TestItem Key="SW13">${sw13Status.toUpperCase()}</TestItem><TestItem Key="SW14">${sw14Status.toUpperCase()}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem><TestItem Key="COMPASS">${compassStatus.toUpperCase()}</TestItem><TestItem Key="SPEAKER">${speakerStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSUP">${brightnessUpStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSDOWN">${brightnessDownStatus.toUpperCase()}</TestItem><TestItem Key="BATTERY">${batteryStatus.toUpperCase()}</TestItem></TestInfo>`;
 
     // 使用 Blob 產生 XML 檔案並觸發下載
     const blob = new Blob([xmlContent], { type: "application/xml" });
@@ -753,6 +1350,8 @@ exportLogButton.addEventListener("click", function () {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 });
+
+
 
 // 修改test button
 
@@ -830,23 +1429,6 @@ document.getElementById('nav-dashboard').addEventListener('click', function (e) 
     // 同時更新內容標頭文字
     document.querySelector('.content-header h1').innerText = 'Dashboard';
 });
-
-// document.getElementById('btn-back-dashboard').addEventListener('click', function () {
-//     // 返回 Dashboard 頁面
-//     document.getElementById('function-test-section').style.display = 'none';
-//     document.getElementById('dashboard-section').style.display = 'block';
-//     // 更新標頭文字回 Dashboard
-//     document.querySelector('.content-header h1').innerText = 'Dashboard';
-// });
-
-// document.getElementById('btn-back-dashboard').addEventListener('click', function () {
-//     document.getElementById('function-test-section').style.display = 'none';
-//     const dashboardSection = document.getElementById('dashboard-section');
-//     if (dashboardSection) {
-//         dashboardSection.style.display = 'block';
-//     }
-// });
-
 
 document.getElementById('nav-disconnect').addEventListener('click', function (e) {
     e.preventDefault();
