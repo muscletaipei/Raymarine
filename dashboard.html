@@ -464,6 +464,26 @@
                                                                 <h3 class="card-title">Auto Test Items</h3>
                                                             </div>
                                                             <div class="card-body">
+                                                                <div class="card card-info">
+                                                                    <div class="card-header">
+                                                                        <h3 class="card-title">設定檔上傳</h3>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <input type="file" id="config-file" class="form-control">
+                                                                        <button id="upload-config" class="btn btn-info mt-2">上傳設定檔</button>
+                                                                        <div id="config-message" class="mt-2 text-info"></div>
+                                                                    </div>
+                                                                </div>
+                                                                <!-- Version -->
+                                                                <button id="button-version" type="button" class="btn btn-info">VERSION</button>
+                                                                <div class="mb-3">
+                                                                    <strong>VERSION: </strong>
+                                                                    <b><span id="version-output-status" class="ml-2"><span
+                                                                        class="badge badge-warning"></span></span></b>
+                                                                    <span id="version-status" class="ml-2"><span
+                                                                            class="badge badge-warning">N/A</span></span>
+                                                                </div>
+                                                                <hr />
                                                                 <!-- LED ON -->
                                                                 <button id="button-led" type="button" class="btn btn-info">LED ON</button>
                                                                 <div class="mb-3">
@@ -515,14 +535,24 @@
                                                                     </span>
                                                                 </div>
                                                                 <hr />
-                                                                <button id="button-battery" type="button"
+                                                                <!-- <button id="button-battery" type="button"
                                                                     class="btn btn-info"><i class="bi-soundwave"></i>
                                                                     Battery</button>
                                                                 <div class="mb-3">
-                                                                    <strong>Battery Voltage: </strong>
+                                                                    <strong>Voltage: </strong>
                                                                     <span id="battery-status">N/A
                                                                     </span>
+                                                                </div> -->
+                                                                <!-- Battery -->
+                                                                <button id="button-battery" type="button" class="btn btn-info">Battery</button>
+                                                                <div class="mb-3">
+                                                                    <strong>Voltage: </strong>
+                                                                    <span id="battery-output-status" class="ml-2"><span
+                                                                        class="badge badge-warning"></span></span>
+                                                                    <span id="battery-status" class="ml-2"><span
+                                                                            class="badge badge-warning">N/A</span></span>
                                                                 </div>
+                                                                <hr />
                                                             </div>
                                                         </div>        
                                                     </div>

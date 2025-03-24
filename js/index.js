@@ -7,6 +7,7 @@ let speakerResult = null;
 let brightnessUpResult = null;
 let brightnessDownResult = null;
 let batteryResult = null;
+let versionResult = null;
 
 // 新增全域變數，記錄按鈕是否等待回應
 let pendingLEDON = false;
@@ -16,6 +17,7 @@ let pendingSPEAKER = false;
 let pendingBRIGHTNESSUP = false;
 let pendingBRIGHTNESSDOWN = false;
 let pendingBATTERY = false;
+let pendingVERSION = false;
 
 // 全域用來儲存 log 記錄的陣列
 let logEntries = [];
@@ -27,12 +29,15 @@ const screens = {
 };
 // --------------------------------------------------------------------------------------------------
 
+// 定義duration 
+const GLOBAL_DURATION = 1000;
+
 const deviceName = document.getElementById('device-name');
 const deviceNameInput = document.getElementById('device-name-input');
 const connectButton = document.getElementById('button-connect');
 const echoButton = document.getElementById('button-echo');
 
-// 修改test button
+// 修改test button--------------------------------------------------
 const ledButton = document.getElementById('button-led');
 const ledOffButton = document.getElementById('button-led-off');
 const compassButton = document.getElementById('button-compass');
@@ -40,8 +45,9 @@ const speakerButton = document.getElementById('button-speaker');
 const brightnessButtonUp = document.getElementById('button-brightness-up');
 const brightnessButtonDown = document.getElementById('button-brightness-down');
 const batteryButton = document.getElementById('button-battery');
+const versionButton = document.getElementById('button-version');
 
-// 修改test button
+// 修改test button--------------------------------------------------
 
 const disconnectButton = document.getElementById('button-disconnect');
 const resetButton = document.getElementById('button-reset');
@@ -122,6 +128,9 @@ mcumgr.onConnect(() => {
     batteryButton.disabled = false;
     batteryButton.classList.remove('disabled');
 
+    versionButton.disabled = false;
+    versionButton.classList.remove('disabled');
+
     // 在 onConnect 回呼中重置 LED 狀態
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -136,7 +145,8 @@ mcumgr.onConnect(() => {
     document.getElementById('sw12-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    
+
+    document.getElementById('version-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -144,7 +154,8 @@ mcumgr.onConnect(() => {
     document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';;
     document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-
+    document.getElementById('version-output-status').innerHTML = "";
+    document.getElementById('battery-output-status').innerHTML = "";
 
     // 重新初始化 log 陣列，並記錄 device name 與 S/N
     logEntries = [];
@@ -157,8 +168,8 @@ mcumgr.onDisconnect(() => {
     screens.connecting.style.display = 'none';
     screens.connected.style.display = 'none';
     screens.initial.style.display = 'block';
-    
-    
+
+
     // 清空 test item 狀態與 log
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -174,6 +185,7 @@ mcumgr.onDisconnect(() => {
     document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
 
+    document.getElementById('version-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -181,14 +193,18 @@ mcumgr.onDisconnect(() => {
     document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('version-output-status').innerHTML = "";
+    document.getElementById('battery-output-status').innerHTML = "";
+
+
     logEntries = [];
-    
+
     // Clear BT mac input
     document.getElementById("mac-input").value = "";
     document.getElementById("device-name-input").value = "";
     document.getElementById("sn-input").value = "";
     document.querySelector('.content-header h1').innerText = "";
-    
+
 });
 
 mcumgr.onMessage(({ op, group, id, data, length }) => {
@@ -210,6 +226,11 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             // alert(data.o);
             const output = data.o.trim();
             console.log("Received response:", data.o);
+            // // Version 回應處理
+            // if (output === "Zephyr version 3.7.90") {
+            //     versionResult = "Pass";
+            //     pendingVERSION = false;
+            // }
             // LED ON 回應處理
             if (output === "LED turned on") {
                 // const ledOnStatusElem = document.getElementById('led-on-status');
@@ -227,7 +248,7 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingLEDOFF = false;
             }
             // Compass 回應處理
-            else if (output === "get compass values") {
+            else if (output === "compass: ok") {
                 // const compassStatusElem = document.getElementById('compass-status');
                 // compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
                 // addLogEntry("COMPASS", "PASS");
@@ -235,7 +256,7 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingCOMPASS = false;
             }
             // Speaker 回應處理
-            else if (output === "Control speaker") {
+            else if (output === "speaker ok") {
                 // const speakerStatusElem = document.getElementById('speaker-status');
                 // speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
                 // addLogEntry("SPEAKER", "PASS");
@@ -243,7 +264,7 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingSPEAKER = false;
             }
             // Brightness Up 回應處理
-            else if (output === "Control brightness up") {
+            else if (output === "brightness up") {
                 // const brightnessUpStatusElem = document.getElementById('brightness-up-status');
                 // brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
                 // addLogEntry("BRIGHTNESSUP", "PASS");
@@ -251,12 +272,24 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingBRIGHTNESSUP = false;
             }
             // Brightness Down 回應處理
-            else if (output === "Control brightness down") {
+            else if (output === "brightness down") {
                 // const brightnessDownStatusElem = document.getElementById('brightness-down-status');
                 // brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
                 // addLogEntry("BRIGHTNESSDOWN", "PASS");
                 brightnessDownResult = "Pass";
                 pendingBRIGHTNESSDOWN = false;
+            }
+            // 版本回應處理：如果 output 中包含 "Zephyr version"
+            else if (output.includes("Zephyr version")) {
+                // 顯示完整的 output 字串在版本輸出區
+                document.getElementById('version-output-status').innerText = output;
+                // 依據 desiredVersion 來判斷結果，例如：
+                if (output === "Zephyr version " + desiredVersion) {
+                    versionResult = "Pass";
+                } else {
+                    versionResult = "Fail";
+                }
+                pendingVERSION = false;
             }
             // Battery 回應處理
             // else if (output === "get battery voltage") {
@@ -270,10 +303,10 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 // 解析
                 let voltage = parseInt(output);
                 // 將頁面上battery-status只顯示數值
-                document.getElementById('batterystaus').innerText= voltage;
+                document.getElementById('battery-output-status').innerText= voltage;
 
                 // 判斷Pass/fail
-                if (voltage >= 2300 && voltage <= 2800){
+                if (voltage >= batteryMin && voltage <= batteryMax){
                     batteryResult = "Pass";
                 } else{
                     batteryResult = "Fail";
@@ -407,7 +440,7 @@ document.getElementById('sw1-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw1-pass');
     const failChk = document.getElementById('sw1-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -416,7 +449,7 @@ document.getElementById('sw1-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw1StatusElem = document.getElementById('sw1-status');
     if (result === "Pass") {
@@ -424,7 +457,7 @@ document.getElementById('sw1-submit').addEventListener('click', function() {
     } else {
         sw1StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW1", result);
     });
@@ -449,7 +482,7 @@ document.getElementById('sw2-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw2-pass');
     const failChk = document.getElementById('sw2-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -458,7 +491,7 @@ document.getElementById('sw2-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw2StatusElem = document.getElementById('sw2-status');
     if (result === "Pass") {
@@ -466,7 +499,7 @@ document.getElementById('sw2-submit').addEventListener('click', function() {
     } else {
         sw2StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW2", result);
     });
@@ -491,7 +524,7 @@ document.getElementById('sw4-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw4-pass');
     const failChk = document.getElementById('sw4-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -500,7 +533,7 @@ document.getElementById('sw4-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw4StatusElem = document.getElementById('sw4-status');
     if (result === "Pass") {
@@ -508,7 +541,7 @@ document.getElementById('sw4-submit').addEventListener('click', function() {
     } else {
         sw4StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW4", result);
     });
@@ -533,7 +566,7 @@ document.getElementById('sw5-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw5-pass');
     const failChk = document.getElementById('sw5-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -542,7 +575,7 @@ document.getElementById('sw5-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw5StatusElem = document.getElementById('sw5-status');
     if (result === "Pass") {
@@ -550,7 +583,7 @@ document.getElementById('sw5-submit').addEventListener('click', function() {
     } else {
         sw5StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW5", result);
     });
@@ -574,7 +607,7 @@ document.getElementById('sw6-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw6-pass');
     const failChk = document.getElementById('sw6-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -583,7 +616,7 @@ document.getElementById('sw6-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw6StatusElem = document.getElementById('sw6-status');
     if (result === "Pass") {
@@ -591,7 +624,7 @@ document.getElementById('sw6-submit').addEventListener('click', function() {
     } else {
         sw6StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW6", result);
     });
@@ -615,7 +648,7 @@ document.getElementById('sw7-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw7-pass');
     const failChk = document.getElementById('sw7-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -624,7 +657,7 @@ document.getElementById('sw7-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw7StatusElem = document.getElementById('sw7-status');
     if (result === "Pass") {
@@ -632,7 +665,7 @@ document.getElementById('sw7-submit').addEventListener('click', function() {
     } else {
         sw7StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW7", result);
     });
@@ -656,7 +689,7 @@ document.getElementById('sw8-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw8-pass');
     const failChk = document.getElementById('sw8-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -665,7 +698,7 @@ document.getElementById('sw8-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw8StatusElem = document.getElementById('sw8-status');
     if (result === "Pass") {
@@ -673,7 +706,7 @@ document.getElementById('sw8-submit').addEventListener('click', function() {
     } else {
         sw8StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW8", result);
     });
@@ -697,7 +730,7 @@ document.getElementById('sw9-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw9-pass');
     const failChk = document.getElementById('sw9-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -706,7 +739,7 @@ document.getElementById('sw9-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw9StatusElem = document.getElementById('sw9-status');
     if (result === "Pass") {
@@ -714,7 +747,7 @@ document.getElementById('sw9-submit').addEventListener('click', function() {
     } else {
         sw9StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW9", result);
     });
@@ -738,7 +771,7 @@ document.getElementById('sw10-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw10-pass');
     const failChk = document.getElementById('sw10-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -747,7 +780,7 @@ document.getElementById('sw10-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw10StatusElem = document.getElementById('sw10-status');
     if (result === "Pass") {
@@ -755,7 +788,7 @@ document.getElementById('sw10-submit').addEventListener('click', function() {
     } else {
         sw10StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW10", result);
     });
@@ -779,7 +812,7 @@ document.getElementById('sw11-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw11-pass');
     const failChk = document.getElementById('sw11-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -788,7 +821,7 @@ document.getElementById('sw11-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw11StatusElem = document.getElementById('sw11-status');
     if (result === "Pass") {
@@ -796,7 +829,7 @@ document.getElementById('sw11-submit').addEventListener('click', function() {
     } else {
         sw11StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW11", result);
     });
@@ -820,7 +853,7 @@ document.getElementById('sw12-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw12-pass');
     const failChk = document.getElementById('sw12-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -829,7 +862,7 @@ document.getElementById('sw12-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw12StatusElem = document.getElementById('sw12-status');
     if (result === "Pass") {
@@ -837,7 +870,7 @@ document.getElementById('sw12-submit').addEventListener('click', function() {
     } else {
         sw12StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW12", result);
     });
@@ -861,7 +894,7 @@ document.getElementById('sw13-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw13-pass');
     const failChk = document.getElementById('sw13-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -870,7 +903,7 @@ document.getElementById('sw13-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw13StatusElem = document.getElementById('sw13-status');
     if (result === "Pass") {
@@ -878,7 +911,7 @@ document.getElementById('sw13-submit').addEventListener('click', function() {
     } else {
         sw13StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW13", result);
     });
@@ -902,7 +935,7 @@ document.getElementById('sw14-submit').addEventListener('click', function() {
     const passChk = document.getElementById('sw14-pass');
     const failChk = document.getElementById('sw14-fail');
     let result = "";
-    
+
     if (passChk.checked && !failChk.checked) {
         result = "Pass";
     } else if (failChk.checked && !passChk.checked) {
@@ -911,7 +944,7 @@ document.getElementById('sw14-submit').addEventListener('click', function() {
         alert("請勾選 Pass 或 Fail (只選一個)！");
         return;
     }
-    
+
     // 根據結果更新 badge 顯示
     const sw14StatusElem = document.getElementById('sw14-status');
     if (result === "Pass") {
@@ -919,9 +952,38 @@ document.getElementById('sw14-submit').addEventListener('click', function() {
     } else {
         sw14StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
     }
-    
+
     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
     addLogEntry("SW14", result);
+    });
+
+
+
+
+versionButton.addEventListener('click', async () => {
+        pendingVERSION = true;
+        versionResult = null;  //add result
+        versionButton.disabled = true;
+        versionButton.classList.add('disabled');
+
+        // 取得 Version 狀態區，清空原內容（原先可能顯示 "N/A"）
+        const versionStatusElem = document.getElementById('version-status');
+        versionStatusElem.innerHTML = '';
+
+        // 建立並加入 spinner
+        const spinner = createSpinner();
+        versionStatusElem.appendChild(spinner);
+
+        await mcumgr.smpVersion();
+        
+        // 模擬進度結束後移除 spinner 並更新狀態
+        setTimeout(() => {
+            versionStatusElem.removeChild(spinner);
+            // 根據回應結果更新狀態顯示（這裡以 ledOnResult 為例）
+            versionStatusElem.innerHTML = versionResult === "Pass"
+                ? '<span class="badge badge-success">Pass</span>'
+                : '<span class="badge badge-danger">Fail</span>';
+        }, GLOBAL_DURATION);
     });
 
 ledButton.addEventListener('click', async () => {
@@ -937,79 +999,19 @@ ledButton.addEventListener('click', async () => {
     ledOnStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED ON 狀態區域
+    const spinner = createSpinner();
     ledOnStatusElem.appendChild(spinner);
 
-    // // 建立進度條容器 (使用 Bootstrap/ AdminLTE 樣式)
-    // const progressBarContainer = document.createElement('div');
-    // progressBarContainer.className = 'progress mt-2';
-    // progressBarContainer.style.height = '20px';
-
-    // // 建立進度條
-    // const progressBar = document.createElement('div');
-    // progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated';
-    // progressBar.role = 'progressbar';
-    // progressBar.style.width = '0%';
-    // progressBar.setAttribute('aria-valuenow', '0');
-    // progressBar.setAttribute('aria-valuemin', '0');
-    // progressBar.setAttribute('aria-valuemax', '100');
-    // progressBarContainer.appendChild(progressBar);
-
-    // // 插入進度條到 LED ON 狀態區域
-    // ledOnStatusElem.appendChild(progressBarContainer);
-
-    // 動畫設定：3000 毫秒內從 0% 到 100%
-    const duration = 1000;  // 毫秒
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
-
     await mcumgr.smpLed();
-    // 可選擇在發送命令時先加入記錄，例如暫時標記為等待回應
-    addLogEntry("LED ON", "");
-    // 等待進度條結束後再更新狀態 (3000ms 後)
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         ledOnStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (ledOnResult === "Pass") {
-            ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
-    // Timout for progessbar function
-
-    // setTimeout(() => {
-    //     // 如果尚未收到回應，預設記為 Fail
-    //     if (pendingLEDON && !ledOnResult) {
-    //         ledOnResult = "Fail";
-    //         addLogEntry("LEDON", "FAIL");
-    //         pendingLEDON = false;
-    //     }
-    //     console.log("LED ON button click: ", ledOnResult)
-    //     console.log("LED on: ", mcumgr.smpLed)
-    //     // 更新 LED ON 狀態顯示，移除進度條並顯示結果
-    //     if (ledOnResult === "Pass") {
-    //         ledOnStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    //     } else {
-    //         ledOnStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    //     }
-    // }, duration);
-
+        // 根據回應結果更新狀態顯示（這裡以 ledOnResult 為例）
+        ledOnStatusElem.innerHTML = ledOnResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 
 ledOffButton.addEventListener('click', async () => {
@@ -1023,43 +1025,19 @@ ledOffButton.addEventListener('click', async () => {
     ledOffStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED Off 狀態區域
+    const spinner = createSpinner();
     ledOffStatusElem.appendChild(spinner);
-
-    // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 1000;
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
 
     await mcumgr.smpLedoff();
     
-    addLogEntry("LED OFF", "");
-    // 若 3 秒內仍未收到回應，則自動更新為 FAIL
-    // 等待 duration 毫秒後再更新 UI
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         ledOffStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (ledOffResult === "Pass") {
-            ledOffStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            ledOffStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+        // 根據回應結果更新狀態顯示（這裡以 ledOnResult 為例）
+        ledOffStatusElem.innerHTML = ledOffResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 
 compassButton.addEventListener('click', async () => {
@@ -1074,41 +1052,19 @@ compassButton.addEventListener('click', async () => {
     compassStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED ON 狀態區域
+    const spinner = createSpinner();
     compassStatusElem.appendChild(spinner);
 
-    // 動畫設定：3000 毫秒內從 0% 到 100%
-    const duration = 1000;  // 毫秒
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
     await mcumgr.smpCompass();
-    addLogEntry("Compass", "");
-
-    // 等待進度條結束後再更新狀態 (3000ms 後)
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         compassStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (compassResult === "Pass") {
-            compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            compassStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+        // 根據回應結果更新狀態顯示
+        compassStatusElem.innerHTML = compassResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 speakerButton.addEventListener('click', async () => {
     pendingSPEAKER = true;
@@ -1121,40 +1077,19 @@ speakerButton.addEventListener('click', async () => {
     speakerStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED ON 狀態區域
+    const spinner = createSpinner();
     speakerStatusElem.appendChild(spinner);
 
-    // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 1000;
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
     await mcumgr.smpSpeaker();
-    addLogEntry("Speaker", "");
-    // 等待 duration 毫秒後再更新 UI
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         speakerStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (speakerResult === "Pass") {
-            speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            speakerStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+        // 根據回應結果更新狀態顯示
+        speakerStatusElem.innerHTML = speakerResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 brightnessButtonUp.addEventListener('click', async () => {
     pendingBRIGHTNESSUP = true;
@@ -1167,40 +1102,19 @@ brightnessButtonUp.addEventListener('click', async () => {
     brightnessUpStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED ON 狀態區域
+    const spinner = createSpinner();
     brightnessUpStatusElem.appendChild(spinner);
 
-    // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 1000;
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
     await mcumgr.smpBrightnessUp();
-    addLogEntry("BrightnessUp", "");
-    // 等待 duration 毫秒後再更新 UI
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         brightnessUpStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (brightnessUpResult === "Pass") {
-            brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            brightnessUpStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+        // 根據回應結果更新狀態顯示
+        brightnessUpStatusElem.innerHTML = brightnessUpResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 brightnessButtonDown.addEventListener('click', async () => {
     pendingBRIGHTNESSDOWN = true;
@@ -1213,40 +1127,19 @@ brightnessButtonDown.addEventListener('click', async () => {
     brightnessDownStatusElem.innerHTML = '';
 
     // 建立 spinner 元素
-    const spinner = document.createElement('div');
-    spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    spinner.setAttribute('role', 'status');
-    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
-
-    // 插入 spinner 到 LED ON 狀態區域
+    const spinner = createSpinner();
     brightnessDownStatusElem.appendChild(spinner);
 
-    // 設定進度條動畫，duration 為 3000 毫秒
-    const duration = 1000;
-    const intervalTime = 100;
-    let elapsed = 0;
-    const progressInterval = setInterval(() => {
-        elapsed += intervalTime;
-        const percent = Math.min((elapsed / duration) * 100, 100);
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        if (elapsed >= duration) {
-            clearInterval(progressInterval);
-        }
-    }, intervalTime);
     await mcumgr.smpBrightnessDown();
-    addLogEntry("BrightnessDown", "");
-    // 等待 duration 毫秒後再更新 UI
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
     setTimeout(() => {
-        // 移除 spinner
         brightnessDownStatusElem.removeChild(spinner);
-        // 根據結果顯示狀態標籤
-        if (brightnessDownResult === "Pass") {
-            brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-        } else {
-            brightnessDownStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-        }
-    }, duration);
+        // 根據回應結果更新狀態顯示
+        brightnessDownStatusElem.innerHTML = brightnessDownResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 batteryButton.addEventListener('click', async () => {
     pendingBATTERY = true;
@@ -1254,45 +1147,24 @@ batteryButton.addEventListener('click', async () => {
     batteryButton.disabled = true;
     batteryButton.classList.add('disabled');
 
-    // // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
-    // const batteryStatusElem = document.getElementById('battery-status');
-    // batteryStatusElem.innerHTML = '';
+    // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
+    const batteryStatusElem = document.getElementById('battery-status');
+    batteryStatusElem.innerHTML = '';
 
-    // // 建立 spinner 元素
-    // const spinner = document.createElement('div');
-    // spinner.className = 'spinner-border text-primary mt-2';  // 使用 AdminLTE/Bootstrap spinner 樣式
-    // spinner.setAttribute('role', 'status');
-    // spinner.innerHTML = '<span class="sr-only">Loading...</span>';
+    // 建立 spinner 元素
+    const spinner = createSpinner();
+    batteryStatusElem.appendChild(spinner);
 
-    // // 插入 spinner 到 LED ON 狀態區域
-    // batteryStatusElem.appendChild(spinner);
-
-    // 設定進度條動畫，duration 為 3000 毫秒
-//     const duration = 1000;
-//     const intervalTime = 100;
-//     let elapsed = 0;
-//     const progressInterval = setInterval(() => {
-//         elapsed += intervalTime;
-//         const percent = Math.min((elapsed / duration) * 100, 100);
-//         progressBar.style.width = percent + '%';
-//         progressBar.setAttribute('aria-valuenow', percent);
-//         if (elapsed >= duration) {
-//             clearInterval(progressInterval);
-//         }
-//     }, intervalTime);
-//     await mcumgr.smpBattery();
-//     addLogEntry("Battery", "");
-//     // 等待 duration 毫秒後再更新 UI
-//     setTimeout(() => {
-//         // 移除 spinner
-//         batteryStatusElem.removeChild(spinner);
-//         // 根據結果顯示狀態標籤
-//         if (batteryResult === "Pass") {
-//             batteryStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-//         } else {
-//             batteryStatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-//         }
-//     }, duration);
+    await mcumgr.smpBattery();
+    
+    // 模擬進度結束後移除 spinner 並更新狀態
+    setTimeout(() => {
+        batteryStatusElem.removeChild(spinner);
+        // 根據回應結果更新狀態顯示
+        batteryStatusElem.innerHTML = batteryResult === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+    }, GLOBAL_DURATION);    
 });
 
 // 輸出 log 按鈕的事件處理
@@ -1437,3 +1309,52 @@ document.getElementById('nav-disconnect').addEventListener('click', function (e)
     document.querySelector('.content-header h1').innerText = 'BT connect';
 });
 
+/**
+ * 建立一個 Spinner 元素，供非同步操作時顯示
+ * @returns {HTMLElement} Spinner DOM 元素
+ */
+function createSpinner() {
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-border text-primary mt-2';
+    spinner.setAttribute('role', 'status');
+    spinner.innerHTML = '<span class="sr-only">Loading...</span>';
+    return spinner;
+}
+
+
+// 從 localStorage 讀取 desiredVersion，若沒有則預設為 "3.7.90"
+let desiredVersion = localStorage.getItem("desiredVersion") || "3.7.90";
+let batteryMax = localStorage.getItem("batteryMax") || "3000";
+let batteryMin = localStorage.getItem("batteryMin") || "2000";
+
+// 設定檔上傳事件處理
+document.getElementById('upload-config').addEventListener('click', () => {
+    const fileInput = document.getElementById('config-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("請選擇一個設定檔");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const config = JSON.parse(e.target.result);
+            if (config.desiredVersion && config.batteryMax && config.batteryMin) {
+                desiredVersion = config.desiredVersion;
+                batteryMax = config.batteryMax;
+                batteryMin = config.batteryMin;
+                // 儲存 desiredVersion 至 localStorage 方便後續讀取
+                localStorage.setItem("desiredVersion", desiredVersion);
+                localStorage.setItem("batteryMax", batteryMax);
+                localStorage.setItem("batteryMin", batteryMin);
+                document.getElementById('config-message').innerText = "設定檔上傳成功，Version 設為 " + desiredVersion +
+                "，Battery Max 設為 " + batteryMax + "，Battery Min 設為 " + batteryMin;
+            } else {
+                document.getElementById('config-message').innerText = "設定檔格式錯誤：找不到 desiredVersion 屬性";
+            }
+        } catch (error) {
+            document.getElementById('config-message').innerText = "設定檔解析失敗：" + error;
+        }
+    };
+    reader.readAsText(file);
+});

@@ -214,14 +214,17 @@ class MCUManager {
     smpSpeaker(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "speaker"] });
     }
-    smpBattery(message) {
-        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "battery"] });
-    }
     smpBrightnessUp(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "brightness", "up"] });
     }
     smpBrightnessDown(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "brightness", "down"] });
+    }
+    smpBattery(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "battery"] });
+    }
+    smpVersion(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["kernel", "version"] });
     }
 
     // 修改test button
