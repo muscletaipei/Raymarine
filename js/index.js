@@ -132,8 +132,10 @@ mcumgr.onConnect(() => {
     versionButton.classList.remove('disabled');
 
     // 在 onConnect 回呼中重置 LED 狀態
+    // resetAllSwStatus();
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw3-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -169,10 +171,12 @@ mcumgr.onDisconnect(() => {
     screens.connected.style.display = 'none';
     screens.initial.style.display = 'block';
 
-
+    
     // 清空 test item 狀態與 log
+    // resetAllSwStatus();
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('sw3-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
@@ -226,11 +230,6 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             // alert(data.o);
             const output = data.o.trim();
             console.log("Received response:", data.o);
-            // // Version 回應處理
-            // if (output === "Zephyr version 3.7.90") {
-            //     versionResult = "Pass";
-            //     pendingVERSION = false;
-            // }
             // LED ON 回應處理
             if (output === "LED turned on") {
                 // const ledOnStatusElem = document.getElementById('led-on-status');
@@ -420,544 +419,47 @@ function addLogEntry(testName, status) {
 }
 
 // 按鈕事件處理
-// 取得 SW1 按鈕與狀態顯示區
-// 1. 限制 SW1 兩個勾選框只能選一個
-document.querySelectorAll('.sw1-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-            // 當某一個被選中，將其他同組勾選框取消選取
-            document.querySelectorAll('.sw1-checkbox').forEach(function(other) {
-                if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-  // 2. 提交 SW1 測試結果
-document.getElementById('sw1-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw1-pass');
-    const failChk = document.getElementById('sw1-fail');
-    let result = "";
+// // 取得 SW1 按鈕與狀態顯示區
+// // 1. 限制 SW1 兩個勾選框只能選一個
+// document.querySelectorAll('.sw1-checkbox').forEach(function(chk) {
+//     chk.addEventListener('change', function() {
+//         if (this.checked) {
+//             // 當某一個被選中，將其他同組勾選框取消選取
+//             document.querySelectorAll('.sw1-checkbox').forEach(function(other) {
+//                 if (other !== chk) {
+//             other.checked = false;
+//             }
+//         });
+//         }
+//     });
+//     });
+//   // 2. 提交 SW1 測試結果
+// document.getElementById('sw1-submit').addEventListener('click', function() {
+//     // 讀取兩個勾選框的狀態
+//     const passChk = document.getElementById('sw1-pass');
+//     const failChk = document.getElementById('sw1-fail');
+//     let result = "";
 
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
+//     if (passChk.checked && !failChk.checked) {
+//         result = "Pass";
+//     } else if (failChk.checked && !passChk.checked) {
+//         result = "Fail";
+//     } else {
+//         alert("請勾選 Pass 或 Fail (只選一個)！");
+//         return;
+//     }
 
-    // 根據結果更新 badge 顯示
-    const sw1StatusElem = document.getElementById('sw1-status');
-    if (result === "Pass") {
-        sw1StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw1StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
+//     // 根據結果更新 badge 顯示
+//     const sw1StatusElem = document.getElementById('sw1-status');
+//     if (result === "Pass") {
+//         sw1StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+//     } else {
+//         sw1StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
+//     }
 
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW1", result);
-    });
-
-// 取得 SW2/3 按鈕與狀態顯示區
-// 1. 限制 SW2 兩個勾選框只能選一個
-document.querySelectorAll('.sw2-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw2-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW2/3 測試結果
-document.getElementById('sw2-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw2-pass');
-    const failChk = document.getElementById('sw2-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw2StatusElem = document.getElementById('sw2-status');
-    if (result === "Pass") {
-        sw2StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw2StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW2", result);
-    });
-
-// 取得 SW4 按鈕與狀態顯示區
-// 1. 限制 SW4 兩個勾選框只能選一個
-document.querySelectorAll('.sw4-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw4-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-  // 2. 提交 SW4 測試結果
-document.getElementById('sw4-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw4-pass');
-    const failChk = document.getElementById('sw4-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw4StatusElem = document.getElementById('sw4-status');
-    if (result === "Pass") {
-        sw4StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw4StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW4", result);
-    });
-
-// 取得 SW5 按鈕與狀態顯示區
-// 1. 限制 SW5 兩個勾選框只能選一個
-document.querySelectorAll('.sw5-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw5-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW5 測試結果
-document.getElementById('sw5-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw5-pass');
-    const failChk = document.getElementById('sw5-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw5StatusElem = document.getElementById('sw5-status');
-    if (result === "Pass") {
-        sw5StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw5StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW5", result);
-    });
-// 取得 SW6 按鈕與狀態顯示區
-// 1. 限制 SW6 兩個勾選框只能選一個
-document.querySelectorAll('.sw6-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw6-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW6 測試結果
-document.getElementById('sw6-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw6-pass');
-    const failChk = document.getElementById('sw6-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw6StatusElem = document.getElementById('sw6-status');
-    if (result === "Pass") {
-        sw6StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw6StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW6", result);
-    });
-// 取得 SW7 按鈕與狀態顯示區
-// 1. 限制 SW7 兩個勾選框只能選一個
-document.querySelectorAll('.sw7-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw7-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW7 測試結果
-document.getElementById('sw7-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw7-pass');
-    const failChk = document.getElementById('sw7-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw7StatusElem = document.getElementById('sw7-status');
-    if (result === "Pass") {
-        sw7StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw7StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW7", result);
-    });
-// 取得 SW8 按鈕與狀態顯示區
-// 1. 限制 SW8 兩個勾選框只能選一個
-document.querySelectorAll('.sw8-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw8-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW8 測試結果
-document.getElementById('sw8-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw8-pass');
-    const failChk = document.getElementById('sw8-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw8StatusElem = document.getElementById('sw8-status');
-    if (result === "Pass") {
-        sw8StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw8StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW8", result);
-    });
-// 取得 SW9 按鈕與狀態顯示區
-// 1. 限制 SW9 兩個勾選框只能選一個
-document.querySelectorAll('.sw9-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw9-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW9 測試結果
-document.getElementById('sw9-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw9-pass');
-    const failChk = document.getElementById('sw9-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw9StatusElem = document.getElementById('sw9-status');
-    if (result === "Pass") {
-        sw9StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw9StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW9", result);
-    });
-// 取得 SW10 按鈕與狀態顯示區
-// 1. 限制 SW10 兩個勾選框只能選一個
-document.querySelectorAll('.sw10-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw10-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW10 測試結果
-document.getElementById('sw10-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw10-pass');
-    const failChk = document.getElementById('sw10-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw10StatusElem = document.getElementById('sw10-status');
-    if (result === "Pass") {
-        sw10StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw10StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW10", result);
-    });
-// 取得 SW11 按鈕與狀態顯示區
-// 1. 限制 SW11 兩個勾選框只能選一個
-document.querySelectorAll('.sw11-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw11-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW11 測試結果
-document.getElementById('sw11-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw11-pass');
-    const failChk = document.getElementById('sw11-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw11StatusElem = document.getElementById('sw11-status');
-    if (result === "Pass") {
-        sw11StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw11StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW11", result);
-    });
-// 取得 SW12 按鈕與狀態顯示區
-// 1. 限制 SW12 兩個勾選框只能選一個
-document.querySelectorAll('.sw12-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw12-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW12 測試結果
-document.getElementById('sw12-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw12-pass');
-    const failChk = document.getElementById('sw12-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw12StatusElem = document.getElementById('sw12-status');
-    if (result === "Pass") {
-        sw12StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw12StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW12", result);
-    });
-// 取得 SW13 按鈕與狀態顯示區
-// 1. 限制 SW13 兩個勾選框只能選一個
-document.querySelectorAll('.sw13-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw13-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW13 測試結果
-document.getElementById('sw13-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw13-pass');
-    const failChk = document.getElementById('sw13-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw13StatusElem = document.getElementById('sw13-status');
-    if (result === "Pass") {
-        sw13StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw13StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW13", result);
-    });
-// 取得 SW14 按鈕與狀態顯示區
-// 1. 限制 SW14 兩個勾選框只能選一個
-document.querySelectorAll('.sw14-checkbox').forEach(function(chk) {
-    chk.addEventListener('change', function() {
-        if (this.checked) {
-        // 當某一個被選中，將其他同組勾選框取消選取
-        document.querySelectorAll('.sw14-checkbox').forEach(function(other) {
-            if (other !== chk) {
-            other.checked = false;
-            }
-        });
-        }
-    });
-    });
-// 2. 提交 SW14 測試結果
-document.getElementById('sw14-submit').addEventListener('click', function() {
-    // 讀取兩個勾選框的狀態
-    const passChk = document.getElementById('sw14-pass');
-    const failChk = document.getElementById('sw14-fail');
-    let result = "";
-
-    if (passChk.checked && !failChk.checked) {
-        result = "Pass";
-    } else if (failChk.checked && !passChk.checked) {
-        result = "Fail";
-    } else {
-        alert("請勾選 Pass 或 Fail (只選一個)！");
-        return;
-    }
-
-    // 根據結果更新 badge 顯示
-    const sw14StatusElem = document.getElementById('sw14-status');
-    if (result === "Pass") {
-        sw14StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-    } else {
-        sw14StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-    }
-
-    // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-    addLogEntry("SW14", result);
-    });
-
-
+//     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
+//     addLogEntry("SW1", result);
+//     });
 
 
 versionButton.addEventListener('click', async () => {
@@ -1174,7 +676,7 @@ exportLogButton.addEventListener("click", function () {
     // 取得 LED ON 與 LED OFF 的狀態文字
     const sw1Status = document.getElementById("sw1-status").textContent.trim();
     const sw2Status = document.getElementById("sw2-status").textContent.trim();
-    const sw3Status = document.getElementById("sw2-status").textContent.trim();
+    const sw3Status = document.getElementById("sw3-status").textContent.trim();
     const sw4Status = document.getElementById("sw4-status").textContent.trim();
     const sw5Status = document.getElementById("sw5-status").textContent.trim();
     const sw6Status = document.getElementById("sw6-status").textContent.trim();
@@ -1256,6 +758,21 @@ confirmButton.addEventListener('click', async () => {
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelector('.content-header h1').innerText = 'BT Connect';
 
+    // 確保 SW button 的 HTML 元素已載入後，再呼叫 setupSwTest
+    setupSwTest('sw1', 'sw1-submit', 'sw1-pass', 'sw1-fail', 'sw1-status');
+    setupSwTest('sw2', 'sw2-submit', 'sw2-pass', 'sw2-fail', 'sw2-status');
+    setupSwTest('sw3', 'sw3-submit', 'sw3-pass', 'sw3-fail', 'sw3-status');
+    setupSwTest('sw4', 'sw4-submit', 'sw4-pass', 'sw4-fail', 'sw4-status');
+    setupSwTest('sw5', 'sw5-submit', 'sw5-pass', 'sw5-fail', 'sw5-status');
+    setupSwTest('sw6', 'sw6-submit', 'sw6-pass', 'sw6-fail', 'sw6-status');
+    setupSwTest('sw7', 'sw7-submit', 'sw7-pass', 'sw7-fail', 'sw7-status');
+    setupSwTest('sw8', 'sw8-submit', 'sw8-pass', 'sw8-fail', 'sw8-status');
+    setupSwTest('sw9', 'sw9-submit', 'sw9-pass', 'sw9-fail', 'sw9-status');
+    setupSwTest('sw10', 'sw10-submit', 'sw10-pass', 'sw10-fail', 'sw10-status');
+    setupSwTest('sw11', 'sw11-submit', 'sw11-pass', 'sw11-fail', 'sw11-status');
+    setupSwTest('sw12', 'sw12-submit', 'sw12-pass', 'sw12-fail', 'sw12-status');
+    setupSwTest('sw13', 'sw13-submit', 'sw13-pass', 'sw13-fail', 'sw13-status');
+    setupSwTest('sw14', 'sw14-submit', 'sw14-pass', 'sw14-fail', 'sw14-status');
     // Device ID
     // const deviceIdDisplay = document.getElementById("device-id-display");
     // // 如果連線中，更新顯示連線設備的 id；否則顯示 "未連線"
@@ -1321,7 +838,6 @@ function createSpinner() {
     return spinner;
 }
 
-
 // 從 localStorage 讀取 desiredVersion，若沒有則預設為 "3.7.90"
 let desiredVersion = localStorage.getItem("desiredVersion") || "3.7.90";
 let batteryMax = localStorage.getItem("batteryMax") || "3000";
@@ -1358,3 +874,51 @@ document.getElementById('upload-config').addEventListener('click', () => {
     };
     reader.readAsText(file);
 });
+
+/**
+ * 設定 SW 測試按鈕的事件處理
+ * @param {string} swName 測試項目的名稱（例如 "SW1"）
+ * @param {string} submitButtonId 提交按鈕的 ID
+ * @param {string} passCheckboxId Pass 勾選框的 ID
+ * @param {string} failCheckboxId Fail 勾選框的 ID
+ * @param {string} statusElemId 狀態顯示區元素的 ID
+ */
+// 設定 SW 測試按鈕事件處理
+function setupSwTest(swName, submitButtonId, passCheckboxId, failCheckboxId, statusElemId) {
+    // 限制同組勾選框只能選一個，假設勾選框的 class 名稱為 "{swName}-checkbox"（例如 "SW1-checkbox"）
+    document.querySelectorAll(`.${swName}-checkbox`).forEach(chk => {
+        chk.addEventListener('change', function() {
+            if (this.checked) {
+                document.querySelectorAll(`.${swName}-checkbox`).forEach(other => {
+                    if (other !== chk) {
+                        other.checked = false;
+                    }
+                });
+            }
+        });
+    });
+    
+    // 設定提交按鈕事件
+    const submitButton = document.getElementById(submitButtonId);
+    const statusElem = document.getElementById(statusElemId);
+    submitButton.addEventListener('click', function() {
+        const passChk = document.getElementById(passCheckboxId);
+        const failChk = document.getElementById(failCheckboxId);
+        let result = "";
+        // 如果未勾選或兩者都勾選，則跳出提示
+        if (passChk.checked && !failChk.checked) {
+            result = "Pass";
+        } else if (failChk.checked && !passChk.checked) {
+            result = "Fail";
+        } else {
+            alert("請勾選 Pass 或 Fail (只選一個)！");
+            return;
+        }
+        // 根據結果更新狀態顯示，覆蓋原先 "N/A"
+        statusElem.innerHTML = result === "Pass"
+            ? '<span class="badge badge-success">Pass</span>'
+            : '<span class="badge badge-danger">Fail</span>';
+        // 呼叫記錄 log 的函式（假設已定義 addLogEntry 函式）
+        addLogEntry(swName, result);
+    });
+}
