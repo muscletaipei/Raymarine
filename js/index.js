@@ -9,6 +9,11 @@ let brightnessDownResult = null;
 let batteryResult = null;
 let versionResult = null;
 
+// 從 localStorage 讀取 desiredVersion，若沒有則預設為 "3.7.90"
+let desiredVersion = localStorage.getItem("desiredVersion") || "3.7.90";
+let batteryMax = localStorage.getItem("batteryMax") || "3000";
+let batteryMin = localStorage.getItem("batteryMin") || "2000";
+
 // 新增全域變數，記錄按鈕是否等待回應
 let pendingLEDON = false;
 let pendingLEDOFF = false;
@@ -27,10 +32,10 @@ const screens = {
     connecting: document.getElementById('connecting-screen'),
     connected: document.getElementById('connected-screen')
 };
-// --------------------------------------------------------------------------------------------------
 
 // 定義duration 
 const GLOBAL_DURATION = 1000;
+// --------------------------------------------------------------------------------------------------
 
 const deviceName = document.getElementById('device-name');
 const deviceNameInput = document.getElementById('device-name-input');
@@ -158,6 +163,7 @@ mcumgr.onConnect(() => {
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('version-output-status').innerHTML = "";
     document.getElementById('battery-output-status').innerHTML = "";
+    document.getElementById('config-message').innerHTML = "";
 
     // 重新初始化 log 陣列，並記錄 device name 與 S/N
     logEntries = [];
@@ -199,7 +205,7 @@ mcumgr.onDisconnect(() => {
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('version-output-status').innerHTML = "";
     document.getElementById('battery-output-status').innerHTML = "";
-
+    document.getElementById('config-message').innerHTML = "";
 
     logEntries = [];
 
@@ -758,6 +764,11 @@ confirmButton.addEventListener('click', async () => {
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelector('.content-header h1').innerText = 'BT Connect';
 
+    /*---------------------------------------
+    頁面初始化：載入時顯示目前設定狀態
+    -----------------------------------------*/
+    updateCurrentConfigDisplay();
+
     // 確保 SW button 的 HTML 元素已載入後，再呼叫 setupSwTest
     setupSwTest('sw1', 'sw1-submit', 'sw1-pass', 'sw1-fail', 'sw1-status');
     setupSwTest('sw2', 'sw2-submit', 'sw2-pass', 'sw2-fail', 'sw2-status');
@@ -838,42 +849,68 @@ function createSpinner() {
     return spinner;
 }
 
-// 從 localStorage 讀取 desiredVersion，若沒有則預設為 "3.7.90"
-let desiredVersion = localStorage.getItem("desiredVersion") || "3.7.90";
-let batteryMax = localStorage.getItem("batteryMax") || "3000";
-let batteryMin = localStorage.getItem("batteryMin") || "2000";
+/*---------------------------------------
+  工具函式：更新目前設定顯示區
+-----------------------------------------*/
+function updateCurrentConfigDisplay() {
+    // 從 localStorage 取得最新設定（若有更新）
+    desiredVersion = localStorage.getItem("desiredVersion") || desiredVersion;
+    batteryMax = localStorage.getItem("batteryMax") || batteryMax;
+    batteryMin = localStorage.getItem("batteryMin") || batteryMin;
+    const configDisplayElem = document.getElementById('current-config');
+    if (configDisplayElem) {
+        configDisplayElem.innerHTML = `
+        <div>
+          <strong style="color: blue;">當前設定檔: </strong>
+        </div>
+        <div>
+          <strong style="color: blue;">Version: ${desiredVersion}</strong>
+        </div>
+        <div>
+          <strong style="color: blue;">Battery: ${batteryMin} ~ ${batteryMax}</strong>
+        </div>
+      `;
+    }
+  }
 
-// 設定檔上傳事件處理
+/*---------------------------------------
+  設定檔上傳事件監聽
+-----------------------------------------*/
 document.getElementById('upload-config').addEventListener('click', () => {
     const fileInput = document.getElementById('config-file');
     const file = fileInput.files[0];
     if (!file) {
-        alert("請選擇一個設定檔");
-        return;
+      alert("請選擇一個設定檔");
+      return;
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        try {
-            const config = JSON.parse(e.target.result);
-            if (config.desiredVersion && config.batteryMax && config.batteryMin) {
-                desiredVersion = config.desiredVersion;
-                batteryMax = config.batteryMax;
-                batteryMin = config.batteryMin;
-                // 儲存 desiredVersion 至 localStorage 方便後續讀取
-                localStorage.setItem("desiredVersion", desiredVersion);
-                localStorage.setItem("batteryMax", batteryMax);
-                localStorage.setItem("batteryMin", batteryMin);
-                document.getElementById('config-message').innerText = "設定檔上傳成功，Version 設為 " + desiredVersion +
-                "，Battery Max 設為 " + batteryMax + "，Battery Min 設為 " + batteryMin;
-            } else {
-                document.getElementById('config-message').innerText = "設定檔格式錯誤：找不到 desiredVersion 屬性";
-            }
-        } catch (error) {
-            document.getElementById('config-message').innerText = "設定檔解析失敗：" + error;
+      try {
+        const config = JSON.parse(e.target.result);
+        // 檢查 JSON 內是否包含必要的屬性
+        if (config.desiredVersion && config.batteryMax && config.batteryMin) {
+          desiredVersion = config.desiredVersion;
+          batteryMax = config.batteryMax;
+          batteryMin = config.batteryMin;
+          // 儲存至 localStorage
+          localStorage.setItem("desiredVersion", desiredVersion);
+          localStorage.setItem("batteryMax", batteryMax);
+          localStorage.setItem("batteryMin", batteryMin);
+          document.getElementById('config-message').innerText ="設定檔上傳成功";
+            // "設定檔上傳成功，Version 設為 " + desiredVersion +
+            // "，Battery 設為 " + batteryMin + "~"  + batteryMax;
+          // 更新頁面上目前的設定狀態
+          updateCurrentConfigDisplay();
+        } else {
+          document.getElementById('config-message').innerText =
+            "設定檔格式錯誤：缺少必要的屬性";
         }
+      } catch (error) {
+        document.getElementById('config-message').innerText = "設定檔解析失敗：" + error;
+      }
     };
     reader.readAsText(file);
-});
+  });
 
 /**
  * 設定 SW 測試按鈕的事件處理
