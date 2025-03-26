@@ -489,20 +489,24 @@
                                                                     </div>
                                                                     <div class="card-body">
                                                                         <input type="file" id="config-file" class="form-control">
-                                                                        <button id="upload-config" class="btn btn-info mt-2">上傳設定檔</button>
+                                                                        <button id="upload-config" class="btn btn-secondary mt-2">上傳設定檔</button>
                                                                         <hr>
                                                                         <B><div id="config-message" class="mt-2 text-info"></div></B>
                                                                         <div id="current-config" class="mt-2 text-info" style="margin-bottom: 10px;"></div>
                                                                     </div>
                                                                 </div>
+                                                                <!-- auto button -->
+                                                                <button id="button-run-all" type="button" class="btn btn-secondary btn-lg">一鍵全測</button>
+                                                                <div id="all-tests-status" style="margin-top: 10px; color: green;"></div>
+                                                                <hr>
                                                                 <!-- Version -->
                                                                 <button id="button-version" type="button" class="btn btn-info">VERSION</button>
+                                                                <b><span id="version-output-status" class="ml-2" style="color: cadetblue;"><span
+                                                                    class="badge badge-warning"></span></span></b>
                                                                 <div class="mb-3">
                                                                     <strong>VERSION: </strong>
-                                                                    <b><span id="version-output-status" class="ml-2"><span
-                                                                        class="badge badge-warning"></span></span></b>
                                                                     <span id="version-status" class="ml-2"><span
-                                                                            class="badge badge-warning">N/A</span></span>
+                                                                        class="badge badge-warning">N/A</span></span>
                                                                 </div>
                                                                 <hr />
                                                                 <!-- LED ON -->
@@ -556,20 +560,13 @@
                                                                     </span>
                                                                 </div>
                                                                 <hr />
-                                                                <!-- <button id="button-battery" type="button"
-                                                                    class="btn btn-info"><i class="bi-soundwave"></i>
-                                                                    Battery</button>
-                                                                <div class="mb-3">
-                                                                    <strong>Voltage: </strong>
-                                                                    <span id="battery-status">N/A
-                                                                    </span>
-                                                                </div> -->
+                                                                
                                                                 <!-- Battery -->
                                                                 <button id="button-battery" type="button" class="btn btn-info">Battery</button>
+                                                                <b><span id="battery-output-status" class="ml-2" style="color: cadetblue;"><span
+                                                                    class="badge badge-warning"></span></span></b>
                                                                 <div class="mb-3">
                                                                     <strong>Voltage: </strong>
-                                                                    <b><span id="battery-output-status" class="ml-2"><span
-                                                                        class="badge badge-warning"></span></span></b>
                                                                     <span id="battery-status" class="ml-2"><span
                                                                             class="badge badge-warning">N/A</span></span>
                                                                 </div>

@@ -35,6 +35,7 @@ const screens = {
 
 // 定義duration 
 const GLOBAL_DURATION = 1000;
+const All_GLOBAL_DUATION = 2000;
 // --------------------------------------------------------------------------------------------------
 
 const deviceName = document.getElementById('device-name');
@@ -42,17 +43,6 @@ const deviceNameInput = document.getElementById('device-name-input');
 const connectButton = document.getElementById('button-connect');
 const echoButton = document.getElementById('button-echo');
 
-// 修改test button--------------------------------------------------
-const ledButton = document.getElementById('button-led');
-const ledOffButton = document.getElementById('button-led-off');
-const compassButton = document.getElementById('button-compass');
-const speakerButton = document.getElementById('button-speaker');
-const brightnessButtonUp = document.getElementById('button-brightness-up');
-const brightnessButtonDown = document.getElementById('button-brightness-down');
-const batteryButton = document.getElementById('button-battery');
-const versionButton = document.getElementById('button-version');
-
-// 修改test button--------------------------------------------------
 
 const disconnectButton = document.getElementById('button-disconnect');
 const resetButton = document.getElementById('button-reset');
@@ -68,6 +58,33 @@ const fileUpload = document.getElementById('file-upload');
 const bluetoothIsAvailable = document.getElementById('bluetooth-is-available');
 const bluetoothIsAvailableMessage = document.getElementById('bluetooth-is-available-message');
 const connectBlock = document.getElementById('connect-block');
+
+// 修改test button--------------------------------------------------
+const ledButton = document.getElementById('button-led');
+const ledOffButton = document.getElementById('button-led-off');
+const compassButton = document.getElementById('button-compass');
+const speakerButton = document.getElementById('button-speaker');
+const brightnessButtonUp = document.getElementById('button-brightness-up');
+const brightnessButtonDown = document.getElementById('button-brightness-down');
+const batteryButton = document.getElementById('button-battery');
+const versionButton = document.getElementById('button-version');
+const runAllButton = document.getElementById('button-run-all');
+const allTestsStatus = document.getElementById('all-tests-status');
+
+const testButtons = [
+    document.getElementById('button-version'),
+    document.getElementById('button-led'),
+    document.getElementById('button-led-off'),
+    document.getElementById('button-compass'),
+    document.getElementById('button-speaker'),
+    document.getElementById('button-brightness-up'),
+    document.getElementById('button-brightness-down'),
+    document.getElementById('button-battery'),
+];
+
+
+// 修改test button--------------------------------------------------
+
 
 if (navigator && navigator.bluetooth && navigator.bluetooth.getAvailability()) {
     bluetoothIsAvailableMessage.innerText = 'Bluetooth is available in your browser.';
@@ -413,7 +430,7 @@ echoButton.addEventListener('click', async () => {
     await mcumgr.smpEcho(message);
 });
 
-// 修改test button
+// 修改test button--------------------------------------------------------------------------------------
 
 // 工具函式：加入一筆 log 記錄（包含時間戳、device name 與 S/N）
 function addLogEntry(testName, status) {
@@ -471,8 +488,8 @@ function addLogEntry(testName, status) {
 versionButton.addEventListener('click', async () => {
         pendingVERSION = true;
         versionResult = null;  //add result
-        versionButton.disabled = true;
-        versionButton.classList.add('disabled');
+        // versionButton.disabled = true;
+        // versionButton.classList.add('disabled');
 
         // 取得 Version 狀態區，清空原內容（原先可能顯示 "N/A"）
         const versionStatusElem = document.getElementById('version-status');
@@ -498,8 +515,9 @@ ledButton.addEventListener('click', async () => {
     // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
     pendingLEDON = true;
     ledOnResult = null;  //add result
-    ledButton.disabled = true;
-    ledButton.classList.add('disabled');
+    //反灰
+    // ledButton.disabled = true;
+    // ledButton.classList.add('disabled');
 
     // 取得 LED ON 狀態區域（原本顯示 "N/A"）
     const ledOnStatusElem = document.getElementById('led-on-status');
@@ -525,8 +543,8 @@ ledButton.addEventListener('click', async () => {
 ledOffButton.addEventListener('click', async () => {
     pendingLEDOFF = true;
     ledOffResult = null;  //add result
-    ledOffButton.disabled = true;
-    ledOffButton.classList.add('disabled');
+    // ledOffButton.disabled = true;
+    // ledOffButton.classList.add('disabled');
 
     // 取得 LED OFF 狀態區，清空原內容（原先可能顯示 "N/A"）
     const ledOffStatusElem = document.getElementById('led-off-status');
@@ -551,8 +569,8 @@ ledOffButton.addEventListener('click', async () => {
 compassButton.addEventListener('click', async () => {
     pendingCOMPASS = true;
     compassResult = null;  //add result
-    compassButton.disabled = true;
-    compassButton.classList.add('disabled');
+    // compassButton.disabled = true;
+    // compassButton.classList.add('disabled');
 
     // 取得 Compass 狀態區域（原本顯示 "N/A"）
     const compassStatusElem = document.getElementById('compass-status');
@@ -577,8 +595,8 @@ compassButton.addEventListener('click', async () => {
 speakerButton.addEventListener('click', async () => {
     pendingSPEAKER = true;
     speakerResult = null;
-    speakerButton.disabled = true;
-    speakerButton.classList.add('disabled');
+    // speakerButton.disabled = true;
+    // speakerButton.classList.add('disabled');
 
     // 取得 speaker 狀態區，清空原內容（原先可能顯示 "N/A"）
     const speakerStatusElem = document.getElementById('speaker-status');
@@ -602,8 +620,8 @@ speakerButton.addEventListener('click', async () => {
 brightnessButtonUp.addEventListener('click', async () => {
     pendingBRIGHTNESSUP = true;
     brightnessUpResult = null;
-    brightnessButtonUp.disabled = true;
-    brightnessButtonUp.classList.add('disabled');
+    // brightnessButtonUp.disabled = true;
+    // brightnessButtonUp.classList.add('disabled');
 
     // 取得 brightness up 狀態區，清空原內容（原先可能顯示 "N/A"）
     const brightnessUpStatusElem = document.getElementById('brightness-up-status');
@@ -627,8 +645,8 @@ brightnessButtonUp.addEventListener('click', async () => {
 brightnessButtonDown.addEventListener('click', async () => {
     pendingBRIGHTNESSDOWN = true;
     brightnessDownResult = null;
-    brightnessButtonDown.disabled = true;
-    brightnessButtonDown.classList.add('disabled');
+    // brightnessButtonDown.disabled = true;
+    // brightnessButtonDown.classList.add('disabled');
 
     // 取得 brightness down 狀態區，清空原內容（原先可能顯示 "N/A"）
     const brightnessDownStatusElem = document.getElementById('brightness-down-status');
@@ -652,8 +670,8 @@ brightnessButtonDown.addEventListener('click', async () => {
 batteryButton.addEventListener('click', async () => {
     pendingBATTERY = true;
     batteryResult = null;
-    batteryButton.disabled = true;
-    batteryButton.classList.add('disabled');
+    // batteryButton.disabled = true;
+    // batteryButton.classList.add('disabled');
 
     // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
     const batteryStatusElem = document.getElementById('battery-status');
@@ -731,9 +749,20 @@ exportLogButton.addEventListener("click", function () {
     window.URL.revokeObjectURL(url);
 });
 
+runAllButton.addEventListener('click', async () => {
+    // 禁用所有獨立測試按鈕
+    testButtons.forEach(btn => btn.disabled = true);
+    allTestsStatus.innerText = '';
 
+    await runAllTests();
 
-// 修改test button
+    allTestsStatus.innerText = "All automation test items have been tested";
+
+    // 全測完成後重新啟用各按鈕
+    testButtons.forEach(btn => btn.disabled = false);
+});
+
+// 修改test button-------------------------------------------------------------------------
 
 
 resetButton.addEventListener('click', async () => {
@@ -959,3 +988,70 @@ function setupSwTest(swName, submitButtonId, passCheckboxId, failCheckboxId, sta
         addLogEntry(swName, result);
     });
 }
+
+/**
+ * 一鍵全測
+ * 
+ */
+async function runTest(testName, commandFunc, statusElemId) {
+    const statusElem = document.getElementById(statusElemId);
+    // 清空原有狀態並加入 spinner
+    statusElem.innerHTML = '';
+    const spinner = createSpinner();
+    statusElem.appendChild(spinner);
+
+    // 若為 Battery 測試，先設定 pendingBATTERY
+    if (testName === 'BATTERY') {
+        pendingBATTERY = true;
+        batteryResult = null;
+    }
+    
+    // 執行對應的測試指令
+    await commandFunc();
+    
+    // 對於 Battery 測試，可以延長等待時間，例如 1500 毫秒
+    const waitTime = testName === 'BATTERY' ? 1500 : GLOBAL_DURATION;
+    await delay(waitTime);
+    
+    // 移除 spinner
+    statusElem.removeChild(spinner);
+
+    // 根據全域變數更新狀態
+    let result = "N/A";
+    switch(testName) {
+        case 'VERSION': result = versionResult; break;
+        case 'LED_ON': result = ledOnResult; break;
+        case 'LED_OFF': result = ledOffResult; break;
+        case 'COMPASS': result = compassResult; break;
+        case 'SPEAKER': result = speakerResult; break;
+        case 'BRIGHTNESS_UP': result = brightnessUpResult; break;
+        case 'BRIGHTNESS_DOWN': result = brightnessDownResult; break;
+        case 'BATTERY': result = batteryResult; break;
+        default:
+            result = "N/A";
+    }
+    
+    statusElem.innerHTML = result === "Pass"
+        ? '<span class="badge badge-success">Pass</span>'
+        : '<span class="badge badge-danger">'+result+'</span>';
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+async function runAllTests() {
+    // 例如：版本測試
+    await runTest('VERSION', () => mcumgr.smpVersion(), 'version-status');
+
+    await runTest('LED_ON', () => mcumgr.smpLed(), 'led-on-status');
+    await runTest('LED_OFF', () => mcumgr.smpLedoff(), 'led-off-status');
+    await runTest('COMPASS', () => mcumgr.smpCompass(), 'compass-status');
+    await runTest('SPEAKER', () => mcumgr.smpSpeaker(), 'speaker-status');
+    await runTest('BRIGHTNESS_UP', () => mcumgr.smpBrightnessUp(), 'brightness-up-status');
+    await runTest('BRIGHTNESS_DOWN', () => mcumgr.smpBrightnessDown(), 'brightness-down-status');
+    await runTest('BATTERY', () => mcumgr.smpBattery(), 'battery-status');
+}
+
+
