@@ -143,69 +143,463 @@
                                     <!-- 已連線狀態 -->
                                     <div class="content" id="connected-screen" style="display: none;">
                                         <div class="container">
-                                            <hr />
-
-                                            <!-- 功能測試區，左右兩欄 --> 
-                                            <h3>Function Test</h3>
-                                            <button id="button-disconnect" type="submit" class="btn btn-secondary"><i class="bi-x-square"></i> Disconnect</button>
-                                            <button id="button-reset" type="submit" class="btn btn-info"><i class="bi-arrow-clockwise"></i> Reset</button>
-                                            <hr />
-
-                                            <!-- LED 控制 -->
-                                            <div class="row"> 
-                                                <!-- 左欄：LED 控制卡 --> 
-                                                <div class="col-md-6"> 
-                                                    <div class="card card-primary"> 
-                                                        <div class="card-header"> 
-                                                            <h3 class="card-title">Test Items</h3> 
-                                                        </div> 
-                                                        <div class="card-body"> 
-                                                            <!-- 修改後不使用 prompt，直接送出 SMP LED on/off --> 
-                                                            <button id="button-led" type="button" class="btn btn-primary"> LED ON </button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
+                                            <!-- 主內容區，預設隱藏功能測試頁面 -->                                        
+                                            <div class="container-fluid">
+                                                <section id="function-test-section" style="display:none;">
+                                                    <div class="row">
+                                                        <!-- 左欄：Manually test控制卡 -->
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="card card-success">
+                                                                <div class="card-header">
+                                                                    <h3 class="card-title">Step 1 - Auto Test Items</h3>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="card card-info">
+                                                                        <div class="card-header">
+                                                                            <h3 class="card-title">設定檔上傳</h3>
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <input type="file" id="config-file" class="form-control">
+                                                                            <button id="upload-config" class="btn btn-secondary mt-2">上傳設定檔</button>
+                                                                            <hr>
+                                                                            <B><div id="config-message" class="mt-2 text-info"></div></B>
+                                                                            <div id="current-config" class="mt-2 text-info" style="margin-bottom: 10px;"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <!-- MAC address 輸入欄位 -->
+                                                                        <label for="mac-display">MAC address : </label>
+                                                                        <input type="text" class="form-control" id = "mac-display" readonly>
+                                                                    </div>
+                                                                    <!-- S/N 輸入欄位 -->
+                                                                    <div class="form-group">
+                                                                        <label for="sn-input">S/N:</label>
+                                                                        <input type="text" class="form-control"
+                                                                            id="sn-input" placeholder="請輸入 S/N">
+                                                                    </div>
+                                                                        
+                                                                    <!-- auto button -->
+                                                                    <!-- <button id="button-run-all" type="button" class="btn btn-secondary btn-lg">一鍵全測</button>
+                                                                    <div id="all-tests-status" style="margin-top: 10px; color: green;"></div>
+                                                                    <hr> -->
+                                                                    <!-- Version -->
+                                                                    <button id="button-version" type="button" class="btn btn-info">VERSION</button>
+                                                                    <b><span id="version-output-status" class="ml-2" style="color: cadetblue;"><span
+                                                                        class="badge badge-warning"></span></span></b>
+                                                                    <div class="mb-3">
+                                                                        <strong>VERSION: </strong>
+                                                                        <span id="version-status" class="ml-2"><span
+                                                                            class="badge badge-warning">N/A</span></span>
+                                                                    </div>
+                                                                    <hr />
+                                                                    <!-- Battery -->
+                                                                    <button id="button-battery" type="button" class="btn btn-info">Battery</button>
+                                                                    <b><span id="battery-output-status" class="ml-2" style="color: cadetblue;"><span
+                                                                        class="badge badge-warning"></span></span></b>
+                                                                    <div class="mb-3">
+                                                                        <strong>Voltage: </strong>
+                                                                        <span id="battery-status" class="ml-2"><span
+                                                                                class="badge badge-warning">N/A</span></span>
+                                                                    </div>
+                                                                    <hr />
+                                                                    <div class="col-md-12">
+                                                                        <div class="card card-secondary">
+                                                                            <div class="card-header">
+                                                                                <h3 class="card-title">Log 輸出</h3>
+                                                                            </div>
+                                                                            <div class="card-body">
+                                                                                <button id="export-log" type="button"
+                                                                                class="btn btn-success">輸出 Log</button>
+                                                                            </div>                                                    
+                                                                        </div>
+                                                                    </div>    
+                                                                </div>
                                                             </div>
-                                                            <button id="button-led-off" type="button" class="btn btn-primary"> LED Off </button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
+                                                        </div>
+                                                    
+                                                        <!-- 中欄：Auto test控制卡 -->
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="card card-primary">
+                                                                <div class="card-header">
+                                                                    <h3 class="card-title">Step 2 - Manually Test Items</h3>
+                                                                </div>
                                                             </div>
-                                                            <button id="button-compass" type="button" class="btn btn-primary" > Compass </button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A</span> 
+                                                            <div class="card-body">
+                                                                <div class="card mt-2">
+                                                                    <div class="card-header">
+                                                                        <h4 class="card-title">LED 控制</h4>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <!-- LED ON -->
+                                                                        <div class="mb-2">
+                                                                            <label>LED ON: 確認LED有打開</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-led" type="button" class="btn btn-sm btn-info mr-2">LED ON</button>
+                                                                                <button id="led-submit" class="btn btn-sm btn-primary">確認</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input led-on-checkbox" id="led-pass">
+                                                                                    <label class="form-check-label small" for="led-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input led-on-checkbox" id="led-fail">
+                                                                                    <label class="form-check-label small" for="led-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="led-on-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <hr>
+                                                                        <!-- LED OFF -->
+                                                                        <div class="mb-2">
+                                                                            <label>LED OFF: 確認LED有關閉</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-led-off" type="button" class="btn btn-sm btn-info mr-2">LED OFF</button>
+                                                                                <button id="led-off-submit" class="btn btn-sm btn-primary">確認</button>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input led-off-checkbox" id="led-off-pass" value="Pass">
+                                                                                    <label class="form-check-label" for="led-off-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input led-off-checkbox" id="led-off-fail" value="Fail">
+                                                                                    <label class="form-check-label" for="led-off-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="led-off-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="card mt-2">
+                                                                    <div class="card-header">
+                                                                        <h4 class="card-title">其他功能測試</h4>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        <!-- Compass -->
+                                                                        <!-- <div class="mb-2">
+                                                                            <label>Compass: 確認compass是否有資訊</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-led-off" type="button" class="btn btn-sm btn-info mr-2">LED OFF</button>
+                                                                                <button id="led-off-submit" class="btn btn-sm btn-primary">確認</button>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input led-off-checkbox" id="led-off-pass" value="Pass">
+                                                                                    <label class="form-check-label" for="led-off-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input led-off-checkbox" id="led-off-fail" value="Fail">
+                                                                                    <label class="form-check-label" for="led-off-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="led-off-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div> -->
+                                                                        <!-- <div class="mb-2">
+                                                                            <label>Compass: 確認compass是否有資訊</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="compass" type="button" class="btn btn-sm btn-info mr-2">Compass</button>
+                                                                                <button id="compass-submit" class="btn btn-sm btn-primary">確認</button>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input compass-checkbox" id="compass-pass" value="Pass">
+                                                                                    <label class="form-check-label" for="compass-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline">
+                                                                                    <input type="checkbox" class="form-check-input compass-checkbox" id="compass-fail" value="Fail">
+                                                                                    <label class="form-check-label" for="compass-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="compass-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <hr> -->
+                                                                        <!-- Speaker -->
+                                                                        <div class="mb-2">
+                                                                            <label>Speaker: 確認喇叭功能</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-speaker" type="button" class="btn btn-sm btn-info mr-2">Speaker</button>
+                                                                                <strong class="mr-1">狀態:</strong>
+                                                                                <span id="speaker-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <hr>
+                                                                        <!-- Brightness Up -->
+                                                                        <div class="mb-2">
+                                                                            <label>Brightness Up: 提高亮度</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-brightness-up" type="button" class="btn btn-sm btn-info mr-2">Brightness Up</button>
+                                                                                <strong class="mr-1">狀態:</strong>
+                                                                                <span id="brightness-up-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <hr>
+                                                                        <!-- Brightness Down -->
+                                                                        <div class="mb-2">
+                                                                            <label>Brightness Down: 降低亮度</label>
+                                                                            <div class="d-flex align-items-center mb-1">
+                                                                                <button id="button-brightness-down" type="button" class="btn btn-sm btn-info mr-2">Brightness Down</button>
+                                                                                <strong class="mr-1">狀態:</strong>
+                                                                                <span id="brightness-down-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <button id="button-speaker" type="button" class="btn btn-primary"><i class="bi-soundwave"></i> Speaker</button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
+                                                        </div>
+                                                        <!-- 右欄：Manually test控制卡 -->
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="card card-primary">
+                                                                <div class="card-header py-2">
+                                                                    <h5 class="card-title mb-0">Step 3 - Manually Test Items</h5>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="card-header">
+                                                                        <h3 class="card-title">SW1 ~ SW14 測試區</h3>
+                                                                    </div>
+                                                                    <div class="card">
+                                                                        <!-- SW1 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW1: 確認LCD 顯示[sw1]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw1-submit" class="btn btn-sm btn-primary mr-2">SW1</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw1-checkbox" id="sw1-pass">
+                                                                                    <label class="form-check-label small" for="sw1-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw1-checkbox" id="sw1-fail">
+                                                                                    <label class="form-check-label small" for="sw1-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw1-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW2 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW2: 確認LCD 顯示[sw2]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw2-submit" class="btn btn-sm btn-primary mr-2">SW2</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw2-checkbox" id="sw2-pass">
+                                                                                    <label class="form-check-label small" for="sw2-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw2-checkbox" id="sw2-fail">
+                                                                                    <label class="form-check-label small" for="sw2-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw2-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW3 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW3: 確認LCD 顯示[sw3]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw3-submit" class="btn btn-sm btn-primary mr-2">SW3</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw3-checkbox" id="sw3-pass">
+                                                                                    <label class="form-check-label small" for="sw3-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw3-checkbox" id="sw3-fail">
+                                                                                    <label class="form-check-label small" for="sw3-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw3-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW4 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW4: 確認LCD 顯示[sw4]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw4-submit" class="btn btn-sm btn-primary mr-2">SW4</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw4-checkbox" id="sw4-pass">
+                                                                                    <label class="form-check-label small" for="sw4-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw4-checkbox" id="sw4-fail">
+                                                                                    <label class="form-check-label small" for="sw4-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw4-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW5 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW5: 確認LCD 顯示[sw5]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw5-submit" class="btn btn-sm btn-primary mr-2">SW5</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw5-checkbox" id="sw5-pass">
+                                                                                    <label class="form-check-label small" for="sw5-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw5-checkbox" id="sw5-fail">
+                                                                                    <label class="form-check-label small" for="sw5-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw5-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW6 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW6: 確認LCD 顯示[sw6]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw6-submit" class="btn btn-sm btn-primary mr-2">SW6</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw6-checkbox" id="sw6-pass">
+                                                                                    <label class="form-check-label small" for="sw6-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw6-checkbox" id="sw6-fail">
+                                                                                    <label class="form-check-label small" for="sw6-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw6-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    
+                                                                        <!-- SW7 -->
+                                                                        <div class="mb-2">
+                                                                            <label>SW7: 確認LCD 顯示[sw7]</label>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <button id="sw7-submit" class="btn btn-sm btn-primary mr-2">SW7</button>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw7-checkbox" id="sw7-pass">
+                                                                                    <label class="form-check-label small" for="sw7-pass">Pass</label>
+                                                                                </div>
+                                                                                <div class="form-check form-check-inline m-0">
+                                                                                    <input type="checkbox" class="form-check-input sw7-checkbox" id="sw7-fail">
+                                                                                    <label class="form-check-label small" for="sw7-fail">Fail</label>
+                                                                                </div>
+                                                                                <span id="sw7-status" class="ml-2">N/A</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="card">
+                                                                        <div class="card-header">
+                                                                            <h3 class="card-title">SW8 ~ SW14 測試區</h3>
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <!-- SW8 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW8: 確認LCD 顯示[sw8]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw8-submit" class="btn btn-sm btn-primary mr-2">SW8</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw8-checkbox" id="sw8-pass">
+                                                                                        <label class="form-check-label small" for="sw8-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw8-checkbox" id="sw8-fail">
+                                                                                        <label class="form-check-label small" for="sw8-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw8-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW9 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW9: 確認LCD 顯示[sw9]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw9-submit" class="btn btn-sm btn-primary mr-2">SW9</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw9-checkbox" id="sw9-pass">
+                                                                                        <label class="form-check-label small" for="sw9-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw9-checkbox" id="sw9-fail">
+                                                                                        <label class="form-check-label small" for="sw9-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw9-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW10 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW10: 確認LCD 顯示[sw10]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw10-submit" class="btn btn-sm btn-primary mr-2">SW10</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw10-checkbox" id="sw10-pass">
+                                                                                        <label class="form-check-label small" for="sw10-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw10-checkbox" id="sw10-fail">
+                                                                                        <label class="form-check-label small" for="sw10-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw10-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW11 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW11: 確認LCD 顯示[sw11]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw11-submit" class="btn btn-sm btn-primary mr-2">SW11</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw11-checkbox" id="sw11-pass">
+                                                                                        <label class="form-check-label small" for="sw11-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw11-checkbox" id="sw11-fail">
+                                                                                        <label class="form-check-label small" for="sw11-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw11-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW12 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW12: 確認LCD 顯示[sw12]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw12-submit" class="btn btn-sm btn-primary mr-2">SW12</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw12-checkbox" id="sw12-pass">
+                                                                                        <label class="form-check-label small" for="sw12-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw12-checkbox" id="sw12-fail">
+                                                                                        <label class="form-check-label small" for="sw12-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw12-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW13 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW13: 確認LCD 顯示[sw13]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw13-submit" class="btn btn-sm btn-primary mr-2">SW13</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw13-checkbox" id="sw13-pass">
+                                                                                        <label class="form-check-label small" for="sw13-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw13-checkbox" id="sw13-fail">
+                                                                                        <label class="form-check-label small" for="sw13-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw13-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                    
+                                                                            <!-- SW14 -->
+                                                                            <div class="mb-2">
+                                                                                <label>SW14: 確認LCD 顯示[sw14]</label>
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <button id="sw14-submit" class="btn btn-sm btn-primary mr-2">SW14</button>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw14-checkbox" id="sw14-pass">
+                                                                                        <label class="form-check-label small" for="sw14-pass">Pass</label>
+                                                                                    </div>
+                                                                                    <div class="form-check form-check-inline m-0">
+                                                                                        <input type="checkbox" class="form-check-input sw14-checkbox" id="sw14-fail">
+                                                                                        <label class="form-check-label small" for="sw14-fail">Fail</label>
+                                                                                    </div>
+                                                                                    <span id="sw14-status" class="ml-2">N/A</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>    
                                                             </div>
-                                                            <button id="button-battery" type="button" class="btn btn-primary"><i class="bi-soundwave"></i> Battery</button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
-                                                            </div>
-                                                            <button id="button-brightness-up" type="button" class="btn btn-primary"><i class="bi-soundwave"></i> brightness up</button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
-                                                            </div>
-                                                            <button id="button-brightness-down" type="button" class="btn btn-primary"><i class="bi-soundwave"></i> brightness down</button>
-                                                            <div class="mb-3"> 
-                                                                <strong>Status: </strong> 
-                                                                <span id="test-status">N/A
-                                                                    </span> 
-                                                            </div>
-                                                             
-                                                        </div> 
-                                                    </div> 
-                                                </div>
+                                                        </div>
+                                                    </div>
+                                                </section>
                                             </div>
                                                                                              
                                             

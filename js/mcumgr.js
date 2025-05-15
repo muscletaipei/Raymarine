@@ -226,6 +226,36 @@ class MCUManager {
     smpVersion(message) {
         return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["kernel", "version"] });
     }
+    smpSwButton(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "button"] });
+    }
+    smpLcdRed(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "lcd", "red"] });
+    }
+    smpLcdBlue(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "lcd", "blue"] });
+    }
+    smpLcdGreen(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "lcd", "green"] });
+    }
+    smpLcdWhite(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "lcd", "white"] });
+    }
+    smpLcdBlack(message) {
+        return this._sendMessage(MGMT_OP_WRITE, MGMT_GROUP_ID_SHELL, 0, { argv: ["diag", "lcd", "black"] });
+    }
+
+    // mcumgr.js (pseudo-patch)
+    async _ensureConnected () {
+        if (!this._device || !this._device.gatt.connected) {
+        throw new Error('BLE device not connected – please press Connect first');
+        }
+    }
+    
+    // async smpBrightnessUp () {
+    //     await this._ensureConnected();
+    //     /* ... */
+    // }
 
     // 修改test button
 

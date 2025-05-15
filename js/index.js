@@ -8,6 +8,9 @@ let brightnessUpResult = null;
 let brightnessDownResult = null;
 let batteryResult = null;
 let versionResult = null;
+let swButtonResult = null;
+let lcdButtonResult = null;
+
 
 // 從 localStorage 讀取 desiredVersion，若沒有則預設為 "3.7.90"
 let desiredVersion = localStorage.getItem("desiredVersion") || "3.7.90";
@@ -19,10 +22,14 @@ let pendingLEDON = false;
 let pendingLEDOFF = false;
 let pendingCOMPASS = false;
 let pendingSPEAKER = false;
-let pendingBRIGHTNESSUP = false;
-let pendingBRIGHTNESSDOWN = false;
+// let pendingBRIGHTNESSUP = false;
+// let pendingBRIGHTNESSDOWN = false;
 let pendingBATTERY = false;
+let lastBatteryVoltage = null;   // 記錄最新量到的電壓
 let pendingVERSION = false;
+let pendingSwButton = false;
+let pendingLcd = false;
+let compassRaw = null;
 
 // 全域用來儲存 log 記錄的陣列
 let logEntries = [];
@@ -60,25 +67,27 @@ const bluetoothIsAvailableMessage = document.getElementById('bluetooth-is-availa
 const connectBlock = document.getElementById('connect-block');
 
 // 修改test button--------------------------------------------------
-const ledButton = document.getElementById('button-led');
+// const ledButton = document.getElementById('button-led');
 const ledOffButton = document.getElementById('button-led-off');
 const compassButton = document.getElementById('button-compass');
 const speakerButton = document.getElementById('button-speaker');
-const brightnessButtonUp = document.getElementById('button-brightness-up');
-const brightnessButtonDown = document.getElementById('button-brightness-down');
+// const brightnessButtonUp = document.getElementById('button-brightness-up');
+// const brightnessButtonDown = document.getElementById('button-brightness-down');
 const batteryButton = document.getElementById('button-battery');
 const versionButton = document.getElementById('button-version');
 const runAllButton = document.getElementById('button-run-all');
 const allTestsStatus = document.getElementById('all-tests-status');
+const swButton = document.getElementById('button-sw');
+const lcdButton = document.getElementById('button-lcd');
 
 const testButtons = [
     document.getElementById('button-version'),
-    document.getElementById('button-led'),
-    document.getElementById('button-led-off'),
+    // document.getElementById('button-led'),
+    // document.getElementById('button-led-off'),
     document.getElementById('button-compass'),
-    document.getElementById('button-speaker'),
-    document.getElementById('button-brightness-up'),
-    document.getElementById('button-brightness-down'),
+    // document.getElementById('button-speaker'),
+    // document.getElementById('button-brightness-up'),
+    // document.getElementById('button-brightness-down'),
     document.getElementById('button-battery'),
 ];
 
@@ -129,8 +138,8 @@ mcumgr.onConnect(() => {
     // window.location.href = "test.html";
 
     // 重置 LED 按鈕：移除 disabled 屬性和 class
-    ledButton.disabled = false;
-    ledButton.classList.remove('disabled');
+    // ledButton.disabled = false;
+    // ledButton.classList.remove('disabled');
 
     ledOffButton.disabled = false;
     ledOffButton.classList.remove('disabled');
@@ -141,43 +150,36 @@ mcumgr.onConnect(() => {
     speakerButton.disabled = false;
     speakerButton.classList.remove('disabled');
 
-    brightnessButtonUp.disabled = false;
-    brightnessButtonUp.classList.remove('disabled');;
+    // brightnessButtonUp.disabled = false;
+    // brightnessButtonUp.classList.remove('disabled');;
 
-    brightnessButtonDown.disabled = false;
-    brightnessButtonDown.classList.remove('disabled');
+    // brightnessButtonDown.disabled = false;
+    // brightnessButtonDown.classList.remove('disabled');
 
     batteryButton.disabled = false;
     batteryButton.classList.remove('disabled');
 
     versionButton.disabled = false;
     versionButton.classList.remove('disabled');
+    lcdButton.disabled = false;
+    lcdButton.classList.remove('disabled');
+    
 
     // 在 onConnect 回呼中重置 LED 狀態
     // resetAllSwStatus();
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw3-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw7-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw8-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw9-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw10-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw11-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw12-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-
+    
     document.getElementById('version-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    // document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('speaker-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';;
-    document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+
+
+    // document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('lcd-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('version-output-status').innerHTML = "";
     document.getElementById('battery-output-status').innerHTML = "";
     document.getElementById('config-message').innerHTML = "";
@@ -198,28 +200,18 @@ mcumgr.onDisconnect(() => {
     // 清空 test item 狀態與 log
     // resetAllSwStatus();
     document.getElementById('sw1-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw2-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw3-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw4-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw5-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw6-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw7-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw8-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw9-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw10-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw11-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw12-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw13-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('sw14-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
 
     document.getElementById('version-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    // document.getElementById('led-on-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('led-off-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('compass-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('speaker-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('brightness-up-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
-    document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+
+
+    // document.getElementById('brightness-down-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('battery-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
+    document.getElementById('lcd-status').innerHTML = '<span class="badge badge-warning">N/A</span>';
     document.getElementById('version-output-status').innerHTML = "";
     document.getElementById('battery-output-status').innerHTML = "";
     document.getElementById('config-message').innerHTML = "";
@@ -270,34 +262,49 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                 pendingLEDOFF = false;
             }
             // Compass 回應處理
-            else if (output === "compass: ok") {
-                // const compassStatusElem = document.getElementById('compass-status');
-                // compassStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                // addLogEntry("COMPASS", "PASS");
-                compassResult = "Pass";
+            else if (output.includes("acc:") && output.includes("gyro:") && output.includes("mag:")) {
+                // 1. 解析三行
+                const sensorLines = output.split("\n");          // 可能一次收到多行
+                const sensorData  = { acc:{}, gyro:{}, mag:{} };
+            
+                sensorLines.forEach(line => {
+                    const m = /(acc|gyro|mag):\s*x=(-?\d*\.?\d+),\s*y=(-?\d*\.?\d+),\s*z=(-?\d*\.?\d+)/i.exec(line.trim());
+                    if (m) {
+                        const [ , key, x, y, z ] = m;
+                        sensorData[key] = { x: +x, y: +y, z: +z };
+                    }
+                });
+            
+                // 2. 判斷是否有 0
+                const values = [
+                    ...Object.values(sensorData.acc),
+                    ...Object.values(sensorData.gyro),
+                    ...Object.values(sensorData.mag),
+                ];
+                const anyZero = values.some(v => Math.abs(v) === 0);
+            
+                compassResult  = anyZero ? "Fail" : "Pass";
                 pendingCOMPASS = false;
+                document.getElementById('compass-output-status').innerText = output;
             }
+                
             // Speaker 回應處理
-            else if (output === "speaker ok") {
+            else if (output === "speaker turn on") {
                 // const speakerStatusElem = document.getElementById('speaker-status');
                 // speakerStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
+
+
                 // addLogEntry("SPEAKER", "PASS");
                 speakerResult = "Pass";
                 pendingSPEAKER = false;
             }
             // Brightness Up 回應處理
             else if (output === "brightness up") {
-                // const brightnessUpStatusElem = document.getElementById('brightness-up-status');
-                // brightnessUpStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                // addLogEntry("BRIGHTNESSUP", "PASS");
                 brightnessUpResult = "Pass";
                 pendingBRIGHTNESSUP = false;
             }
             // Brightness Down 回應處理
             else if (output === "brightness down") {
-                // const brightnessDownStatusElem = document.getElementById('brightness-down-status');
-                // brightnessDownStatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-                // addLogEntry("BRIGHTNESSDOWN", "PASS");
                 brightnessDownResult = "Pass";
                 pendingBRIGHTNESSDOWN = false;
             }
@@ -324,6 +331,10 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
             else if (pendingBATTERY && !isNaN(output)) {
                 // 解析
                 let voltage = parseInt(output);
+
+                lastBatteryVoltage = voltage;                 // 記錄電壓
+                addLogEntry("BATTERY", `${voltage}`);
+
                 // 將頁面上battery-status只顯示數值
                 document.getElementById('battery-output-status').innerText= voltage;
 
@@ -334,6 +345,11 @@ mcumgr.onMessage(({ op, group, id, data, length }) => {
                     batteryResult = "Fail";
                 }
                 pendingBATTERY = false;
+            }
+            // SW button 回應處理
+            else if (output === "please press any button") {
+                swButtonResult = "Pass";
+                pendingSwButton = false;
             }
 
 
@@ -441,55 +457,23 @@ function addLogEntry(testName, status) {
     logEntries.push(`[${timestamp}] ${currentDeviceName} - S/N: ${snValue} - ${testName}: ${status}`);
 }
 
-// 按鈕事件處理
-// // 取得 SW1 按鈕與狀態顯示區
-// // 1. 限制 SW1 兩個勾選框只能選一個
-// document.querySelectorAll('.sw1-checkbox').forEach(function(chk) {
-//     chk.addEventListener('change', function() {
-//         if (this.checked) {
-//             // 當某一個被選中，將其他同組勾選框取消選取
-//             document.querySelectorAll('.sw1-checkbox').forEach(function(other) {
-//                 if (other !== chk) {
-//             other.checked = false;
-//             }
-//         });
-//         }
-//     });
-//     });
-//   // 2. 提交 SW1 測試結果
-// document.getElementById('sw1-submit').addEventListener('click', function() {
-//     // 讀取兩個勾選框的狀態
-//     const passChk = document.getElementById('sw1-pass');
-//     const failChk = document.getElementById('sw1-fail');
-//     let result = "";
-
-//     if (passChk.checked && !failChk.checked) {
-//         result = "Pass";
-//     } else if (failChk.checked && !passChk.checked) {
-//         result = "Fail";
-//     } else {
-//         alert("請勾選 Pass 或 Fail (只選一個)！");
-//         return;
-//     }
-
-//     // 根據結果更新 badge 顯示
-//     const sw1StatusElem = document.getElementById('sw1-status');
-//     if (result === "Pass") {
-//         sw1StatusElem.innerHTML = '<span class="badge badge-success">Pass</span>';
-//     } else {
-//         sw1StatusElem.innerHTML = '<span class="badge badge-danger">Fail</span>';
-//     }
-
-//     // 將結果記錄到 log 中 (假設已定義 addLogEntry 函式)
-//     addLogEntry("SW1", result);
-//     });
-
+// 封鎖所有測試按鈕
+function disableAllTestButtons() {
+    document.querySelectorAll('#function-test-section button').forEach(btn => {
+        btn.disabled = true;
+    });
+}
+  // 啟用所有測試按鈕
+function enableAllTestButtons() {
+    document.querySelectorAll('#function-test-section button').forEach(btn => {
+        btn.disabled = false;
+    });
+}  
 
 versionButton.addEventListener('click', async () => {
+        disableAllTestButtons();
         pendingVERSION = true;
         versionResult = null;  //add result
-        // versionButton.disabled = true;
-        // versionButton.classList.add('disabled');
 
         // 取得 Version 狀態區，清空原內容（原先可能顯示 "N/A"）
         const versionStatusElem = document.getElementById('version-status');
@@ -509,69 +493,49 @@ versionButton.addEventListener('click', async () => {
                 ? '<span class="badge badge-success">Pass</span>'
                 : '<span class="badge badge-danger">Fail</span>';
         }, GLOBAL_DURATION);
+        enableAllTestButtons();
     });
+/************** 放到工具區（例如 addLogEntry 旁邊） **************/
+function sleep(ms) {
+    return new Promise(res => setTimeout(res, ms));
+}
 
-ledButton.addEventListener('click', async () => {
-    // 禁用按鈕，並加入 disabled 樣式（AdminLTE3/Bootstrap 會自動處理灰色顯示）
-    pendingLEDON = true;
-    ledOnResult = null;  //add result
-    //反灰
-    // ledButton.disabled = true;
-    // ledButton.classList.add('disabled');
-
-    // 取得 LED ON 狀態區域（原本顯示 "N/A"）
-    const ledOnStatusElem = document.getElementById('led-on-status');
-    // 清空原有內容
-    ledOnStatusElem.innerHTML = '';
-
-    // 建立 spinner 元素
-    const spinner = createSpinner();
-    ledOnStatusElem.appendChild(spinner);
-
-    await mcumgr.smpLed();
-    
-    // 模擬進度結束後移除 spinner 並更新狀態
-    setTimeout(() => {
-        ledOnStatusElem.removeChild(spinner);
-        // 根據回應結果更新狀態顯示（這裡以 ledOnResult 為例）
-        ledOnStatusElem.innerHTML = ledOnResult === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
-});
-
+/***************************************************************
+ * 1. LED 改成開／關 3 次的自動循環 + Spinner
+ **************************************************************/
 ledOffButton.addEventListener('click', async () => {
-    pendingLEDOFF = true;
-    ledOffResult = null;  //add result
-    // ledOffButton.disabled = true;
-    // ledOffButton.classList.add('disabled');
+    disableAllTestButtons();
 
-    // 取得 LED OFF 狀態區，清空原內容（原先可能顯示 "N/A"）
-    const ledOffStatusElem = document.getElementById('led-off-status');
-    ledOffStatusElem.innerHTML = '';
+    // UI：鎖按鈕、顯示 Spinner
+    ledOffButton.disabled = true;
+    const ledOffStatus = document.getElementById('led-off-status');
+    ledOffStatus.innerHTML = '';
+    const spin = createSpinner();
+    ledOffStatus.appendChild(spin);
 
-    // 建立 spinner 元素
-    const spinner = createSpinner();
-    ledOffStatusElem.appendChild(spinner);
+    // ---- 3 次開 / 關循環 ----
+    for (let i = 0; i < 3; i++) {
+        
+        await mcumgr.smpLed();      // 開
+        await sleep(1000);
+        await mcumgr.smpLedoff();   // 關
+        await sleep(1000);
+    }
 
-    await mcumgr.smpLedoff();
-    
-    // 模擬進度結束後移除 spinner 並更新狀態
-    setTimeout(() => {
-        ledOffStatusElem.removeChild(spinner);
-        // 根據回應結果更新狀態顯示（這裡以 ledOnResult 為例）
-        ledOffStatusElem.innerHTML = ledOffResult === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
+    // UI：恢復
+    ledOffStatus.removeChild(spin);
+    ledOffStatus.innerHTML = '<span class="badge badge-warning">N/A</span>';
+    // ledOffButton.disabled = false;
+
+    enableAllTestButtons();
 });
 
 compassButton.addEventListener('click', async () => {
+    disableAllTestButtons();
     pendingCOMPASS = true;
     compassResult = null;  //add result
-    // compassButton.disabled = true;
-    // compassButton.classList.add('disabled');
-
+    compassRaw = ""; 
+    
     // 取得 Compass 狀態區域（原本顯示 "N/A"）
     const compassStatusElem = document.getElementById('compass-status');
     // 清空原有內容
@@ -590,13 +554,13 @@ compassButton.addEventListener('click', async () => {
         compassStatusElem.innerHTML = compassResult === "Pass"
             ? '<span class="badge badge-success">Pass</span>'
             : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
+    }, GLOBAL_DURATION);
+    enableAllTestButtons();    
 });
 speakerButton.addEventListener('click', async () => {
+    disableAllTestButtons();
     pendingSPEAKER = true;
     speakerResult = null;
-    // speakerButton.disabled = true;
-    // speakerButton.classList.add('disabled');
 
     // 取得 speaker 狀態區，清空原內容（原先可能顯示 "N/A"）
     const speakerStatusElem = document.getElementById('speaker-status');
@@ -612,66 +576,17 @@ speakerButton.addEventListener('click', async () => {
     setTimeout(() => {
         speakerStatusElem.removeChild(spinner);
         // 根據回應結果更新狀態顯示
-        speakerStatusElem.innerHTML = speakerResult === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
+        speakerStatusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+        
+    }, GLOBAL_DURATION);
+    enableAllTestButtons();  
+
 });
-brightnessButtonUp.addEventListener('click', async () => {
-    pendingBRIGHTNESSUP = true;
-    brightnessUpResult = null;
-    // brightnessButtonUp.disabled = true;
-    // brightnessButtonUp.classList.add('disabled');
 
-    // 取得 brightness up 狀態區，清空原內容（原先可能顯示 "N/A"）
-    const brightnessUpStatusElem = document.getElementById('brightness-up-status');
-    brightnessUpStatusElem.innerHTML = '';
-
-    // 建立 spinner 元素
-    const spinner = createSpinner();
-    brightnessUpStatusElem.appendChild(spinner);
-
-    await mcumgr.smpBrightnessUp();
-    
-    // 模擬進度結束後移除 spinner 並更新狀態
-    setTimeout(() => {
-        brightnessUpStatusElem.removeChild(spinner);
-        // 根據回應結果更新狀態顯示
-        brightnessUpStatusElem.innerHTML = brightnessUpResult === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
-});
-brightnessButtonDown.addEventListener('click', async () => {
-    pendingBRIGHTNESSDOWN = true;
-    brightnessDownResult = null;
-    // brightnessButtonDown.disabled = true;
-    // brightnessButtonDown.classList.add('disabled');
-
-    // 取得 brightness down 狀態區，清空原內容（原先可能顯示 "N/A"）
-    const brightnessDownStatusElem = document.getElementById('brightness-down-status');
-    brightnessDownStatusElem.innerHTML = '';
-
-    // 建立 spinner 元素
-    const spinner = createSpinner();
-    brightnessDownStatusElem.appendChild(spinner);
-
-    await mcumgr.smpBrightnessDown();
-    
-    // 模擬進度結束後移除 spinner 並更新狀態
-    setTimeout(() => {
-        brightnessDownStatusElem.removeChild(spinner);
-        // 根據回應結果更新狀態顯示
-        brightnessDownStatusElem.innerHTML = brightnessDownResult === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-    }, GLOBAL_DURATION);    
-});
 batteryButton.addEventListener('click', async () => {
+    disableAllTestButtons();
     pendingBATTERY = true;
     batteryResult = null;
-    // batteryButton.disabled = true;
-    // batteryButton.classList.add('disabled');
 
     // 取得 battery 狀態區，清空原內容（原先可能顯示 "N/A"）
     const batteryStatusElem = document.getElementById('battery-status');
@@ -691,40 +606,219 @@ batteryButton.addEventListener('click', async () => {
             ? '<span class="badge badge-success">Pass</span>'
             : '<span class="badge badge-danger">Fail</span>';
     }, GLOBAL_DURATION);    
+    enableAllTestButtons();
 });
+swButton.addEventListener('click', async () => {
+    disableAllTestButtons();
+    pendingSwButton = true;
+    swButtonResult = null;
+    // 建立 Toast DOM
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.setAttribute('data-delay', '4000');      // 4 秒自動關閉
+
+    /* ★ 直接寫 style 就能置中，也可以改成加一個自訂 class ★ */
+    toast.style.position  = 'fixed';
+    toast.style.top       = '50%';
+    toast.style.left      = '50%';
+    toast.style.transform = 'translate(-50%, -50%)';
+    toast.style.zIndex    = 1080;                  // 蓋在 modal 之上
+
+    toast.innerHTML = `
+    <div class="toast-header bg-primary text-white">
+        <strong class="mr-auto">提示</strong>
+        <small>now</small>
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast">&times;</button>
+    </div>
+    <div class="toast-body">
+        韌體已進入 SW 按鍵測試模式，請按下 SW1 ~ SW14！
+    </div>
+    `;
+
+    document.body.appendChild(toast);
+    $('.toast').toast('show');
+
+
+    await mcumgr.smpSwButton();
+    enableAllTestButtons();
+
+});
+lcdButton.addEventListener('click', async () => {
+
+    disableAllTestButtons();
+    const lcdStatusElem = document.getElementById('lcd-status');
+    lcdStatusElem.innerHTML = '';
+    
+    // 建立 spinner 元素
+    const spinner = createSpinner();
+    lcdStatusElem.appendChild(spinner);
+
+    
+    // 五個顏色要執行的函式陣列
+    const steps = [
+        () => mcumgr.smpLcdRed(),
+        () => mcumgr.smpLcdGreen(),
+        () => mcumgr.smpLcdBlue(),
+        () => mcumgr.smpLcdWhite(),
+        () => mcumgr.smpLcdBlack(),
+        () => mcumgr.smpLcdRed()
+    ];
+    
+    // 依序執行，每次等待 3 秒
+    for (const step of steps) {
+        try {
+            await step();                       // 發送指令
+        } catch (e) {
+            console.error('LCD cmd error:', e); // 發送失敗時印出錯誤但繼續
+        }
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    lcdStatusElem.removeChild(spinner);
+    lcdStatusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+    enableAllTestButtons();
+});
+
+runAllButton.addEventListener('click', async () => {
+    // 禁用所有獨立測試按鈕
+    disableAllTestButtons();
+    // testButtons.forEach(btn => btn.disabled = true);
+    allTestsStatus.innerText = '';
+
+    await runAllTests();
+
+    allTestsStatus.innerText = "All automation test items have been tested";
+
+    // 全測完成後重新啟用各按鈕
+    testButtons.forEach(btn => btn.disabled = false);
+    enableAllTestButtons();
+});
+
+/* === Brightness Cycle === */
+document.getElementById('button-brightness-cycle').addEventListener('click', () => runBrightnessCycle());
+/**
+ * 先連續 ↑ 四次，再連續 ↓ 四次，每次間隔 0.5 秒
+*/
+function runBrightnessCycle() {
+    disableAllTestButtons();
+    const brightnessStatusElem = document.getElementById('brightness-up-status');
+    brightnessStatusElem.innerHTML = '';
+
+    const TOTAL_CYCLES = 8;      // 總共要送 8 次指令
+    const INTERVAL_MS  = 1000;    // 0.5 秒
+    let   count        = 0;
+
+    // 建立 spinner 元素
+    const spinner = createSpinner();
+    brightnessStatusElem.appendChild(spinner);
+
+    const timer = setInterval(() => {
+        if (count < 4) {
+        // 前四次做 Brightness Up
+        mcumgr.smpBrightnessDown();
+        } else if (count < 8) {
+        // 後四次做 Brightness Down
+        mcumgr.smpBrightnessUp();
+        }
+
+        count++;
+
+        if (count >= TOTAL_CYCLES) {
+        clearInterval(timer);    // 執行完畢就清掉計時器
+        brightnessStatusElem.removeChild(spinner);
+        brightnessStatusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+        enableAllTestButtons();
+        }
+    }, INTERVAL_MS);
+    
+}
+async function runLedCycle() {
+    disableAllTestButtons();
+
+    const runLedCycleleStatusElem = document.getElementById('led-off-status');
+    runLedCycleleStatusElem.innerHTML = '';
+    const spinner = createSpinner();
+    runLedCycleleStatusElem.appendChild(spinner);
+    
+    // ---- 3 次開 / 關循環 ----
+    for (let i = 0; i < 3; i++) {
+        
+        await mcumgr.smpLed();      // 開
+        await sleep(500);
+        await mcumgr.smpLedoff();   // 關
+        await sleep(500);
+    }
+
+    // UI：恢復
+    runLedCycleleStatusElem.removeChild(spinner);
+    runLedCycleleStatusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+
+    // enableAllTestButtons();
+}
+
+async function runLcdCycle() {
+    disableAllTestButtons();
+    const lcdStatusElem = document.getElementById('lcd-status');
+    lcdStatusElem.innerHTML = '';
+    const spinner = createSpinner();
+    lcdStatusElem.appendChild(spinner);
+    // 防止重覆點擊
+    // lcdButton.disabled = true;
+
+    // 五個顏色要執行的函式陣列
+    const steps = [
+        () => mcumgr.smpLcdRed(),
+        () => mcumgr.smpLcdGreen(),
+        () => mcumgr.smpLcdBlue(),
+        () => mcumgr.smpLcdWhite(),
+        () => mcumgr.smpLcdBlack(),
+        () => mcumgr.smpLcdRed()
+    ];
+
+    // 依序執行，每次等待 3 秒
+    for (const step of steps) {
+        try {
+        await step();                       // 發送指令
+        } catch (e) {
+        console.error('LCD cmd error:', e); // 發送失敗時印出錯誤但繼續
+        }
+        await new Promise(r => setTimeout(r, 1500));
+    }
+
+    // lcdButton.disabled = false;        // 完成後重新啟用
+    lcdStatusElem.removeChild(spinner);
+    lcdStatusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+    enableAllTestButtons();
+}
+
 
 // 輸出 log 按鈕的事件處理
 const exportLogButton = document.getElementById("export-log");
 // 輸出 XML Log 按鈕事件處理
 exportLogButton.addEventListener("click", function () {
-    // 取得 LED ON 與 LED OFF 的狀態文字
     const sw1Status = document.getElementById("sw1-status").textContent.trim();
-    const sw2Status = document.getElementById("sw2-status").textContent.trim();
-    const sw3Status = document.getElementById("sw3-status").textContent.trim();
-    const sw4Status = document.getElementById("sw4-status").textContent.trim();
-    const sw5Status = document.getElementById("sw5-status").textContent.trim();
-    const sw6Status = document.getElementById("sw6-status").textContent.trim();
-    const sw7Status = document.getElementById("sw7-status").textContent.trim();
-    const sw8Status = document.getElementById("sw8-status").textContent.trim();
-    const sw9Status = document.getElementById("sw9-status").textContent.trim();
-    const sw10Status = document.getElementById("sw10-status").textContent.trim();
-    const sw11Status = document.getElementById("sw11-status").textContent.trim();
-    const sw12Status = document.getElementById("sw12-status").textContent.trim();
-    const sw13Status = document.getElementById("sw13-status").textContent.trim();
-    const sw14Status = document.getElementById("sw14-status").textContent.trim();
 
-
-    const ledOnStatus = document.getElementById("led-on-status").textContent.trim();
+    // const ledOnStatus = document.getElementById("led-on-status").textContent.trim();
     const ledOffStatus = document.getElementById("led-off-status").textContent.trim();
-    const compassStatus = document.getElementById("compass-status").textContent.trim();
-    const speakerStatus = document.getElementById("speaker-status").textContent.trim();
     const brightnessUpStatus = document.getElementById("brightness-up-status").textContent.trim();
-    const brightnessDownStatus = document.getElementById("brightness-down-status").textContent.trim();
-    const batteryStatus = document.getElementById("battery-status").textContent.trim();
+    const speakerStatus = document.getElementById("speaker-status").textContent.trim();
+    const lcdStatus = document.getElementById("lcd-status").textContent.trim();
+
+
+    const batteryStatus = lastBatteryVoltage !== null ? `${lastBatteryVoltage}` : "N/A";
+    const compassStatus = document.getElementById("compass-status").textContent.trim();
+    const versionStatus = document.getElementById("version-status").textContent.trim();
+    // const brightnessDownStatus = document.getElementById("brightness-down-status").textContent.trim();
+    // const batteryStatus = document.getElementById("battery-status").textContent.trim();
+
+
+    // const compassRawValue = document.getElementById("compass-output-status").textContent.trim();
+    // 然後在 xmlContent 中加 <TestItem Key="COMPASS_RAW">...</TestItem>
+
+
 
     // 判斷整體測試結果：若兩項皆 PASS 則整體 PASS，否則 FAIL
     let overall = "PASS";
-    if (sw14Status.toUpperCase() !== "PASS" ||sw13Status.toUpperCase() !== "PASS" ||sw12Status.toUpperCase() !== "PASS" ||sw11Status.toUpperCase() !== "PASS" ||sw10Status.toUpperCase() !== "PASS" ||sw9Status.toUpperCase() !== "PASS" ||sw8Status.toUpperCase() !== "PASS" ||sw7Status.toUpperCase() !== "PASS" ||sw6Status.toUpperCase() !== "PASS" ||sw5Status.toUpperCase() !== "PASS" ||sw4Status.toUpperCase() !== "PASS" || sw3Status.toUpperCase() !== "PASS" || sw2Status.toUpperCase() !== "PASS" ||sw1Status.toUpperCase() !== "PASS" || ledOnStatus.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS" || compassStatus.toUpperCase() !== "PASS" || speakerStatus.toUpperCase() !== "PASS" || brightnessUpStatus.toUpperCase() !== "PASS" || brightnessDownStatus.toUpperCase() !== "PASS" || batteryStatus.toUpperCase() !== "PASS") {
+    if (versionStatus.toUpperCase() !== "PASS" || lcdStatus.toUpperCase() !== "PASS" || sw1Status.toUpperCase() !== "PASS" || ledOffStatus.toUpperCase() !== "PASS" || compassStatus.toUpperCase() !== "PASS" || speakerStatus.toUpperCase() !== "PASS" || brightnessUpStatus.toUpperCase() !== "PASS") {
         overall = "FAIL";
     }
     // 取得 S/N 與 BT MAC 輸入欄的值
@@ -735,7 +829,7 @@ exportLogButton.addEventListener("click", function () {
     const fileName = `ms5564${overall === "PASS" ? "P" : "F"}_${snValue}.xml`;
 
     // 產生 XML 格式內容，順序依序為 SN、LEDON、LEDOFF 與 BT_MAC
-    const xmlContent = `<TestInfo><TestItem Key="SN">ms${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="SW1">${sw1Status.toUpperCase()}</TestItem><TestItem Key="SW2">${sw2Status.toUpperCase()}</TestItem><TestItem Key="SW3">${sw3Status.toUpperCase()}</TestItem><TestItem Key="SW4">${sw4Status.toUpperCase()}</TestItem><TestItem Key="SW5">${sw5Status.toUpperCase()}</TestItem><TestItem Key="SW6">${sw6Status.toUpperCase()}</TestItem><TestItem Key="SW7">${sw7Status.toUpperCase()}</TestItem><TestItem Key="SW8">${sw8Status.toUpperCase()}</TestItem><TestItem Key="SW9">${sw9Status.toUpperCase()}</TestItem><TestItem Key="SW10">${sw10Status.toUpperCase()}</TestItem><TestItem Key="SW11">${sw11Status.toUpperCase()}</TestItem><TestItem Key="SW12">${sw12Status.toUpperCase()}</TestItem><TestItem Key="SW13">${sw13Status.toUpperCase()}</TestItem><TestItem Key="SW14">${sw14Status.toUpperCase()}</TestItem><TestItem Key="LEDON">${ledOnStatus.toUpperCase()}</TestItem><TestItem Key="LEDOFF">${ledOffStatus.toUpperCase()}</TestItem><TestItem Key="COMPASS">${compassStatus.toUpperCase()}</TestItem><TestItem Key="SPEAKER">${speakerStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSUP">${brightnessUpStatus.toUpperCase()}</TestItem><TestItem Key="BRIGHTNESSDOWN">${brightnessDownStatus.toUpperCase()}</TestItem><TestItem Key="BATTERY">${batteryStatus.toUpperCase()}</TestItem></TestInfo>`;
+    const xmlContent = `<TestInfo><TestItem Key="SN">5564110_${snValue}</TestItem><TestItem Key="BT_MAC">${btMacValue}</TestItem><TestItem Key="Keypad1">${sw1Status.toUpperCase()}</TestItem><TestItem Key="LED1">${ledOffStatus.toUpperCase()}</TestItem><TestItem Key="Gsensor">${compassStatus.toUpperCase()}</TestItem><TestItem Key="Buzzer">${speakerStatus.toUpperCase()}</TestItem><TestItem Key="LCD">${lcdStatus.toUpperCase()}</TestItem><TestItem Key="Brightness">${brightnessUpStatus.toUpperCase()}</TestItem><TestItem Key="BAT">${batteryStatus.toUpperCase()}</TestItem><NgInfo><Errcode/><ErrPinDesc/></NgInfo></TestInfo>`;
 
     // 使用 Blob 產生 XML 檔案並觸發下載
     const blob = new Blob([xmlContent], { type: "application/xml" });
@@ -749,18 +843,7 @@ exportLogButton.addEventListener("click", function () {
     window.URL.revokeObjectURL(url);
 });
 
-runAllButton.addEventListener('click', async () => {
-    // 禁用所有獨立測試按鈕
-    testButtons.forEach(btn => btn.disabled = true);
-    allTestsStatus.innerText = '';
 
-    await runAllTests();
-
-    allTestsStatus.innerText = "All automation test items have been tested";
-
-    // 全測完成後重新啟用各按鈕
-    testButtons.forEach(btn => btn.disabled = false);
-});
 
 // 修改test button-------------------------------------------------------------------------
 
@@ -789,7 +872,9 @@ confirmButton.addEventListener('click', async () => {
     }
 });
 
-// 在此加入 Device ID 顯示更新邏輯
+const groupIds = ['sw1', 'led-off', 'speaker', 'brightness-up', 'lcd'];
+
+
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelector('.content-header h1').innerText = 'BT Connect';
 
@@ -799,32 +884,12 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCurrentConfigDisplay();
 
     // 確保 SW button 的 HTML 元素已載入後，再呼叫 setupSwTest
-    setupSwTest('sw1', 'sw1-submit', 'sw1-pass', 'sw1-fail', 'sw1-status');
-    setupSwTest('sw2', 'sw2-submit', 'sw2-pass', 'sw2-fail', 'sw2-status');
-    setupSwTest('sw3', 'sw3-submit', 'sw3-pass', 'sw3-fail', 'sw3-status');
-    setupSwTest('sw4', 'sw4-submit', 'sw4-pass', 'sw4-fail', 'sw4-status');
-    setupSwTest('sw5', 'sw5-submit', 'sw5-pass', 'sw5-fail', 'sw5-status');
-    setupSwTest('sw6', 'sw6-submit', 'sw6-pass', 'sw6-fail', 'sw6-status');
-    setupSwTest('sw7', 'sw7-submit', 'sw7-pass', 'sw7-fail', 'sw7-status');
-    setupSwTest('sw8', 'sw8-submit', 'sw8-pass', 'sw8-fail', 'sw8-status');
-    setupSwTest('sw9', 'sw9-submit', 'sw9-pass', 'sw9-fail', 'sw9-status');
-    setupSwTest('sw10', 'sw10-submit', 'sw10-pass', 'sw10-fail', 'sw10-status');
-    setupSwTest('sw11', 'sw11-submit', 'sw11-pass', 'sw11-fail', 'sw11-status');
-    setupSwTest('sw12', 'sw12-submit', 'sw12-pass', 'sw12-fail', 'sw12-status');
-    setupSwTest('sw13', 'sw13-submit', 'sw13-pass', 'sw13-fail', 'sw13-status');
-    setupSwTest('sw14', 'sw14-submit', 'sw14-pass', 'sw14-fail', 'sw14-status');
-    // Device ID
-    // const deviceIdDisplay = document.getElementById("device-id-display");
-    // // 如果連線中，更新顯示連線設備的 id；否則顯示 "未連線"
-    // if (typeof mcumgr !== "undefined" && mcumgr._device) {
-    //     deviceIdDisplay.innerText = mcumgr._device.id;
-    //     // 也可以存入 localStorage 以供後續頁面使用
-    //     localStorage.setItem("deviceId", mcumgr._device.id);
-    // } else {
-    //     const storedId = localStorage.getItem("deviceId");
-    //     deviceIdDisplay.innerText = storedId ? storedId : "未連線";
-    // }
+    groupIds.forEach(setupCheckboxGroup);
+
+    // setupSwTest('sw1', 'sw1-submit', 'sw1-pass', 'sw1-fail', 'sw1-status');
 });
+
+
 
 // 過濾Bt mac字串
 document.getElementById("mac-input").addEventListener("input", function () {
@@ -836,8 +901,10 @@ document.getElementById("mac-input").addEventListener("input", function () {
         // 取最後兩組，例如 ["E1", "91"] → "E191"
         var filtered = parts.slice(-2).join("");
         // 自動填入 Device name (optional) 輸入框中
-        document.getElementById("device-name-input").value = filtered;
-        // document.getElementById("device-name-input").value = 'M' + filtered;
+        //----------------------------------------------------------------
+        // document.getElementById("device-name-input").value = filtered;
+        //----------------------------------------------------------------
+        document.getElementById("device-name-input").value = 'M' + filtered;
     }
 });
 
@@ -879,7 +946,7 @@ function createSpinner() {
 }
 
 /*---------------------------------------
-  工具函式：更新目前設定顯示區
+工具函式：更新目前設定顯示區
 -----------------------------------------*/
 function updateCurrentConfigDisplay() {
     // 從 localStorage 取得最新設定（若有更新）
@@ -890,104 +957,94 @@ function updateCurrentConfigDisplay() {
     if (configDisplayElem) {
         configDisplayElem.innerHTML = `
         <div>
-          <strong style="color: blue;">當前設定檔: </strong>
+        <strong style="color: blue;">當前設定檔: </strong>
         </div>
         <div>
-          <strong style="color: blue;">Version: ${desiredVersion}</strong>
+        <strong style="color: blue;">Version: ${desiredVersion}</strong>
         </div>
         <div>
-          <strong style="color: blue;">Battery: ${batteryMin} ~ ${batteryMax}</strong>
+        <strong style="color: blue;">Battery: ${batteryMin} ~ ${batteryMax}</strong>
         </div>
-      `;
+        `;
     }
-  }
+}
 
 /*---------------------------------------
-  設定檔上傳事件監聽
+設定檔上傳事件監聽
 -----------------------------------------*/
 document.getElementById('upload-config').addEventListener('click', () => {
     const fileInput = document.getElementById('config-file');
     const file = fileInput.files[0];
     if (!file) {
-      alert("請選擇一個設定檔");
-      return;
+        alert("請選擇一個設定檔");
+        return;
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-      try {
+
+        try {
         const config = JSON.parse(e.target.result);
         // 檢查 JSON 內是否包含必要的屬性
         if (config.desiredVersion && config.batteryMax && config.batteryMin) {
-          desiredVersion = config.desiredVersion;
-          batteryMax = config.batteryMax;
-          batteryMin = config.batteryMin;
-          // 儲存至 localStorage
-          localStorage.setItem("desiredVersion", desiredVersion);
-          localStorage.setItem("batteryMax", batteryMax);
-          localStorage.setItem("batteryMin", batteryMin);
-          document.getElementById('config-message').innerText ="設定檔上傳成功";
+            desiredVersion = config.desiredVersion;
+            batteryMax = config.batteryMax;
+            batteryMin = config.batteryMin;
+            // 儲存至 localStorage
+            localStorage.setItem("desiredVersion", desiredVersion);
+            localStorage.setItem("batteryMax", batteryMax);
+            localStorage.setItem("batteryMin", batteryMin);
+            document.getElementById('config-message').innerText ="設定檔上傳成功";
             // "設定檔上傳成功，Version 設為 " + desiredVersion +
             // "，Battery 設為 " + batteryMin + "~"  + batteryMax;
-          // 更新頁面上目前的設定狀態
-          updateCurrentConfigDisplay();
+            // 更新頁面上目前的設定狀態
+            updateCurrentConfigDisplay();
         } else {
-          document.getElementById('config-message').innerText =
+            document.getElementById('config-message').innerText =
             "設定檔格式錯誤：缺少必要的屬性";
         }
-      } catch (error) {
+
+        } catch (error) {
         document.getElementById('config-message').innerText = "設定檔解析失敗：" + error;
-      }
+        }
     };
     reader.readAsText(file);
-  });
+});
 
 /**
- * 設定 SW 測試按鈕的事件處理
- * @param {string} swName 測試項目的名稱（例如 "SW1"）
- * @param {string} submitButtonId 提交按鈕的 ID
- * @param {string} passCheckboxId Pass 勾選框的 ID
- * @param {string} failCheckboxId Fail 勾選框的 ID
- * @param {string} statusElemId 狀態顯示區元素的 ID
+ * 通用：綁定 Pass/Fail checkbox 的互斥邏輯與狀態顯示
+ * @param {string} id 測項名稱（如 sw1、led、battery）
  */
-// 設定 SW 測試按鈕事件處理
-function setupSwTest(swName, submitButtonId, passCheckboxId, failCheckboxId, statusElemId) {
-    // 限制同組勾選框只能選一個，假設勾選框的 class 名稱為 "{swName}-checkbox"（例如 "SW1-checkbox"）
-    document.querySelectorAll(`.${swName}-checkbox`).forEach(chk => {
-        chk.addEventListener('change', function() {
-            if (this.checked) {
-                document.querySelectorAll(`.${swName}-checkbox`).forEach(other => {
-                    if (other !== chk) {
-                        other.checked = false;
-                    }
-                });
-            }
-        });
-    });
-    
-    // 設定提交按鈕事件
-    const submitButton = document.getElementById(submitButtonId);
-    const statusElem = document.getElementById(statusElemId);
-    submitButton.addEventListener('click', function() {
-        const passChk = document.getElementById(passCheckboxId);
-        const failChk = document.getElementById(failCheckboxId);
-        let result = "";
-        // 如果未勾選或兩者都勾選，則跳出提示
+function setupCheckboxGroup(id) {
+    const passChk = document.getElementById(`${id}-pass`);
+    const failChk = document.getElementById(`${id}-fail`);
+    const statusDom = document.getElementById(`${id}-status`);
+
+    if (!passChk || !failChk || !statusDom) {
+        console.warn(`略過 ${id}，缺少必要 DOM`);
+        return;
+    }
+
+    [passChk, failChk].forEach(chk =>
+        chk.addEventListener('change', () => {
+        if (chk === passChk && passChk.checked) failChk.checked = false;
+        if (chk === failChk && failChk.checked) passChk.checked = false;
+        refreshStatus();
+    })
+    );
+
+    function refreshStatus() {
         if (passChk.checked && !failChk.checked) {
-            result = "Pass";
+            statusDom.innerHTML = '<span class="badge badge-success">Pass</span>';
+            addLogEntry(id.toUpperCase(), 'Pass');
         } else if (failChk.checked && !passChk.checked) {
-            result = "Fail";
-        } else {
-            alert("請勾選 Pass 或 Fail (只選一個)！");
-            return;
+            statusDom.innerHTML = '<span class="badge badge-danger">Fail</span>';
+            addLogEntry(id.toUpperCase(), 'Fail');
+            } else {
+                statusDom.innerHTML = '<span class="badge badge-warning">N/A</span>';
         }
-        // 根據結果更新狀態顯示，覆蓋原先 "N/A"
-        statusElem.innerHTML = result === "Pass"
-            ? '<span class="badge badge-success">Pass</span>'
-            : '<span class="badge badge-danger">Fail</span>';
-        // 呼叫記錄 log 的函式（假設已定義 addLogEntry 函式）
-        addLogEntry(swName, result);
-    });
-}
+    }
+    refreshStatus(); // 預設初始化
+}  
 
 /**
  * 一鍵全測
@@ -1020,13 +1077,13 @@ async function runTest(testName, commandFunc, statusElemId) {
     let result = "N/A";
     switch(testName) {
         case 'VERSION': result = versionResult; break;
-        case 'LED_ON': result = ledOnResult; break;
-        case 'LED_OFF': result = ledOffResult; break;
-        case 'COMPASS': result = compassResult; break;
-        case 'SPEAKER': result = speakerResult; break;
-        case 'BRIGHTNESS_UP': result = brightnessUpResult; break;
-        case 'BRIGHTNESS_DOWN': result = brightnessDownResult; break;
         case 'BATTERY': result = batteryResult; break;
+        // case 'LED_ON': result = ledOnResult; break;
+        // case 'LED_OFF': result = ledOffResult; break;
+        case 'COMPASS': result = compassResult; break;
+        // case 'SPEAKER': result = speakerResult; break;
+        // case 'BRIGHTNESS_UP': result = brightnessUpResult; break;
+        // case 'BRIGHTNESS_DOWN': result = brightnessDownResult; break;
         default:
             result = "N/A";
     }
@@ -1040,18 +1097,53 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function runManualTestOnly(commandFunc, statusElemId) {
+    disableAllTestButtons();
+    const statusElem = document.getElementById(statusElemId);
+    statusElem.innerHTML = '';
+    const spinner = createSpinner();
+    statusElem.appendChild(spinner);
+
+    await commandFunc();
+    await delay(1000); // 可視實際需求調整
+
+    statusElem.removeChild(spinner);
+    statusElem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+}
+
+function showNAWithSpinner(statusElemId) {
+    const elem = document.getElementById(statusElemId);
+    elem.innerHTML = '<span class="badge badge-warning">N/A</span>';
+}
+
 
 async function runAllTests() {
     // 例如：版本測試
+    disableAllTestButtons();
     await runTest('VERSION', () => mcumgr.smpVersion(), 'version-status');
-
-    await runTest('LED_ON', () => mcumgr.smpLed(), 'led-on-status');
-    await runTest('LED_OFF', () => mcumgr.smpLedoff(), 'led-off-status');
-    await runTest('COMPASS', () => mcumgr.smpCompass(), 'compass-status');
-    await runTest('SPEAKER', () => mcumgr.smpSpeaker(), 'speaker-status');
-    await runTest('BRIGHTNESS_UP', () => mcumgr.smpBrightnessUp(), 'brightness-up-status');
-    await runTest('BRIGHTNESS_DOWN', () => mcumgr.smpBrightnessDown(), 'brightness-down-status');
+    await delay(1500);
     await runTest('BATTERY', () => mcumgr.smpBattery(), 'battery-status');
+    await delay(1500);
+    await runTest('COMPASS', () => mcumgr.smpCompass(), 'compass-status');
+    await delay(1500);4
+    
+    // await runTest('SPEAKER', () => mcumgr.smpSpeaker(), 'speaker-status');
+    // await delay(1500);
+    await runManualTestOnly(() => mcumgr.smpSpeaker(), 'speaker-status');
+    await delay(1000);
+    
+    await runLcdCycle();
+    await delay(1000);
+    
+    await runLedCycle();
+    await delay(1000);
+    
+    await runBrightnessCycle();  // 包含自己的 setInterval 控制流程
+    await delay(9000);
+    
+
+    enableAllTestButtons();
+    
 }
 
 

@@ -1,11 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['server.py'],
     pathex=[],
     binaries=[],
-    datas=[('dashboard.html', '.'), ('js/index.js', 'js'), ('js/cbor.js', 'js'), ('js/mcumgr.js', 'js'), ('css/bootstrap-grid.css', 'css'), ('css/bootstrap-grid.css.map', 'css'), ('css/bootstrap-grid.min.css', 'css'), ('css/bootstrap-grid.min.css.map', 'css'), ('css/bootstrap-reboot.css', 'css'), ('css/bootstrap-reboot.css.map', 'css'), ('css/bootstrap-reboot.min.css', 'css'), ('css/bootstrap-reboot.min.css.map', 'css'), ('css/bootstrap.css', 'css'), ('css/bootstrap.css.map', 'css'), ('css/bootstrap.min.css', 'css'), ('css/bootstrap.min.css.map', 'css'), ('css/mcumgr.css', 'css')],
+    datas=[
+        ('dashboard.html', '.'),
+        ('css/bootstrap.min.css', 'css'),
+        ('css/fontawesome.min.css', 'css'),
+        ('css/adminlte.min.css', 'css'),
+        ('css/mcumgr.css', 'css'),
+        ('css/all.min.css', 'css'),
+        ('js/jquery.min.js', 'js'),
+        ('js/bootstrap.bundle.min.js', 'js'),
+        ('js/adminlte.min.js', 'js'),
+        ('js/cbor.js', 'js'),
+        ('js/mcumgr.js', 'js'),
+        ('js/index.js', 'js'),
+        ('webfonts', 'webfonts'),
+        ('css/img', 'css/img'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -25,7 +39,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -38,7 +52,7 @@ coll = COLLECT(
     a.binaries,
     a.datas,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     name='server',
 )

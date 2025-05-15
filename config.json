@@ -1,5 +1,5 @@
 {
-    "desiredVersion" : "3.7.99",
-    "batteryMin" : 2400,
-    "batteryMax" : 3000
+    "desiredVersion" : "3.5.99",
+    "batteryMin" : 2300,
+    "batteryMax" : 3100
 }
